@@ -13,7 +13,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent / "ingest")
 
 import bq  # noqa: E402
 
-DDL_FILES = ["raw_aqi.sql", "raw_weather.sql", "stations.sql"]
+DDL_FILES = ["raw_aqi.sql", "raw_weather.sql", "stations.sql", "aqi_cams.sql"]
 
 
 def main() -> None:
