@@ -53,11 +53,11 @@ def _to_frame(city: City, hourly: pd.DataFrame, lat: float, lon: float,
     return df[RAW_WEATHER_COLUMNS]
 
 
-def run_forecast() -> dict[str, int]:
+def run_forecast(only: list[str] | None = None) -> dict[str, int]:
     now = pd.Timestamp(datetime.now(timezone.utc))
     bq.ensure_dataset()
     total = 0
-    for city in load_cities():
+    for city in load_cities(only=only):
         lat, lon = _centroid(city)
         hourly = weather.fetch_forecast(lat, lon)
         df = _to_frame(city, hourly, lat, lon, "open_meteo", now)
@@ -67,14 +67,14 @@ def run_forecast() -> dict[str, int]:
     return {"rows": total}
 
 
-def run_backfill(days: int = 90) -> dict[str, int]:
+def run_backfill(days: int = 90, only: list[str] | None = None) -> dict[str, int]:
     now = pd.Timestamp(datetime.now(timezone.utc))
     end = (now - timedelta(days=ARCHIVE_LAG_DAYS)).strftime("%Y-%m-%d")
     start = (now - timedelta(days=days)).strftime("%Y-%m-%d")
     print(f"Backfilling weather {start} .. {end} ({days}d ERA5) per city")
     bq.ensure_dataset()
     total = 0
-    for city in load_cities():
+    for city in load_cities(only=only):
         lat, lon = _centroid(city)
         hourly = weather.fetch_archive(lat, lon, start, end)
         df = _to_frame(city, hourly, lat, lon, "open_meteo_archive", now)

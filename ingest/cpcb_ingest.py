@@ -30,12 +30,18 @@ STATIONS_COLUMNS = [
 ]
 
 
-def build_frames(records: list[dict], now: pd.Timestamp) -> tuple[pd.DataFrame, pd.DataFrame]:
-    """Transform CPCB records for all registry cities into (raw_aqi, stations) frames."""
+def build_frames(
+    records: list[dict], now: pd.Timestamp, only: list[str] | None = None
+) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Transform CPCB records into (raw_aqi, stations) frames.
+
+    `only` scopes to specific city_ids (used by onboarding); default = all
+    registry cities out of the one national snapshot.
+    """
     aqi_rows: list[dict] = []
     station_rows: dict[str, dict] = {}
 
-    for city in load_cities():
+    for city in load_cities(only=only):
         for r in cpcb.filter_city(records, city.name, city.state):
             station = r.get("station") or r.get("station_name")
             pollutant = r.get("pollutant_id") or r.get("pollutant") or r.get("parameter")
@@ -81,13 +87,14 @@ def build_frames(records: list[dict], now: pd.Timestamp) -> tuple[pd.DataFrame, 
     return aqi_df, stations_df
 
 
-def run() -> dict[str, int]:
+def run(only: list[str] | None = None) -> dict[str, int]:
     now = pd.Timestamp(datetime.now(timezone.utc))
     print("Fetching CPCB national snapshot...")
     records = cpcb.fetch_cpcb_snapshot()
-    print(f"  {len(records)} records; filtering to registry cities...")
+    scope = "all registry cities" if only is None else ", ".join(only)
+    print(f"  {len(records)} records; filtering to {scope}...")
 
-    aqi_df, stations_df = build_frames(records, now)
+    aqi_df, stations_df = build_frames(records, now, only=only)
     print(f"  {len(aqi_df)} readings across {stations_df.shape[0]} stations")
 
     bq.ensure_dataset()

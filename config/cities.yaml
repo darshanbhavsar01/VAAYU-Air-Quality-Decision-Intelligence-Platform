@@ -67,3 +67,12 @@ cities:
     ward_geojson_path: null
     languages: [te]
     priority: 6
+
+  - city_id: pune
+    name: Pune
+    state: Maharashtra
+    bbox: [73.72, 18.44, 73.98, 18.64]
+    tier: A
+    ward_geojson_path: null
+    languages: [mr, hi]
+    priority: 7

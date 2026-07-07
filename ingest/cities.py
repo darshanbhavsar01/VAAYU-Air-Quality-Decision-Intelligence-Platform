@@ -31,7 +31,9 @@ class City:
         return ",".join(str(v) for v in self.bbox)
 
 
-def load_cities(path: Path = CITIES_YAML) -> list[City]:
+def load_cities(path: Path = CITIES_YAML, only: list[str] | None = None) -> list[City]:
+    """Load the city registry. `only` filters to specific city_ids (for
+    single-city ingest / onboarding); unknown ids raise so typos fail loudly."""
     raw = yaml.safe_load(path.read_text(encoding="utf-8"))
     cities = [
         City(
@@ -46,6 +48,13 @@ def load_cities(path: Path = CITIES_YAML) -> list[City]:
         )
         for c in raw["cities"]
     ]
+    if only is not None:
+        want = set(only)
+        known = {c.city_id for c in cities}
+        missing = want - known
+        if missing:
+            raise KeyError(f"Unknown city_id(s): {sorted(missing)}. Known: {sorted(known)}")
+        cities = [c for c in cities if c.city_id in want]
     return sorted(cities, key=lambda c: c.priority)
 
 
