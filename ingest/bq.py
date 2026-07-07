@@ -47,11 +47,33 @@ def ensure_dataset() -> None:
     c.create_dataset(ds, exists_ok=True)
 
 
+def _resolve_sql(filename: str) -> Path:
+    """Accept a bare name (looked up in infra/bigquery/) or an explicit path
+    (e.g. an ml/*.sql file)."""
+    p = Path(filename)
+    if p.exists():
+        return p
+    return SQL_DIR / filename
+
+
+def render_sql_file(filename: str, **params: str) -> str:
+    """Read a .sql file and substitute {project}/{dataset}/... placeholders."""
+    sql = _resolve_sql(filename).read_text(encoding="utf-8")
+    return sql.format(project=GCP_PROJECT_ID, dataset=BQ_DATASET, **params)
+
+
 def run_sql_file(filename: str, **params: str) -> bigquery.table.RowIterator:
-    """Execute a .sql file from infra/bigquery/, substituting {project}/{dataset}/... placeholders."""
-    sql = (SQL_DIR / filename).read_text(encoding="utf-8")
-    sql = sql.format(project=GCP_PROJECT_ID, dataset=BQ_DATASET, **params)
+    """Execute a .sql file (infra/bigquery/ name or explicit path)."""
+    sql = render_sql_file(filename, **params)
     return client().query(sql, location=BQ_LOCATION).result()
+
+
+def dry_run_bytes(filename: str, **params: str) -> int:
+    """Return bytes a query WOULD bill, without running it (CLAUDE.md §11 cost gate)."""
+    sql = render_sql_file(filename, **params)
+    cfg = bigquery.QueryJobConfig(dry_run=True, use_query_cache=False)
+    job = client().query(sql, job_config=cfg, location=BQ_LOCATION)
+    return job.total_bytes_processed or 0
 
 
 def load_dataframe(df: pd.DataFrame, table: str, write_disposition: str = "WRITE_TRUNCATE") -> int:

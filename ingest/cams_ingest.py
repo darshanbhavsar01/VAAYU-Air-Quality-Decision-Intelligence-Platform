@@ -49,17 +49,32 @@ def _finalize(df: pd.DataFrame, now: pd.Timestamp) -> pd.DataFrame:
     return df[AQI_CAMS_COLUMNS]
 
 
-def run_backfill(days: int = 90) -> dict[str, int]:
+CHUNK_DAYS = 45  # date-range chunk size to stay under Open-Meteo free-tier request weight
+
+
+def run_backfill(days: int = 90, chunk_days: int = CHUNK_DAYS) -> dict[str, int]:
+    """Backfill `days` of CAMS history, date-chunked and merged per chunk so a
+    rate-limit late in the run never loses earlier progress (idempotent MERGE)."""
     now = pd.Timestamp(datetime.now(timezone.utc))
-    end = (now - timedelta(days=ARCHIVE_LAG_DAYS)).strftime("%Y-%m-%d")
-    start = (now - timedelta(days=days)).strftime("%Y-%m-%d")
+    final_end = (now - timedelta(days=ARCHIVE_LAG_DAYS)).date()
+    start = (now - timedelta(days=days)).date()
     points = _station_points()
-    print(f"CAMS backfill {start}..{end} for {len(points)} stations")
-    raw = cams.fetch_air_quality(points, start_date=start, end_date=end)
-    df = _finalize(raw, now)
-    n = bq.load_and_merge(df, "_staging_aqi_cams", "merge_aqi_cams.sql")
-    print(f"  merged {n} CAMS rows")
-    return {"rows": n, "stations": len(points)}
+    print(f"CAMS backfill {start}..{final_end} for {len(points)} stations "
+          f"(in {chunk_days}-day chunks)")
+
+    total = 0
+    chunk_start = start
+    while chunk_start <= final_end:
+        chunk_end = min(chunk_start + timedelta(days=chunk_days - 1), final_end)
+        raw = cams.fetch_air_quality(
+            points, start_date=chunk_start.isoformat(), end_date=chunk_end.isoformat()
+        )
+        df = _finalize(raw, now)
+        n = bq.load_and_merge(df, "_staging_aqi_cams", "merge_aqi_cams.sql")
+        print(f"  {chunk_start}..{chunk_end}: merged {n} rows")
+        total += n
+        chunk_start = chunk_end + timedelta(days=1)
+    return {"rows": total, "stations": len(points)}
 
 
 def run_forecast() -> dict[str, int]:

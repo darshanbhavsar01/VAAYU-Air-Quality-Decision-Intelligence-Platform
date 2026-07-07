@@ -10,10 +10,13 @@ fetch many stations in a few batched calls rather than one call per station.
 """
 from __future__ import annotations
 
+import time
 from typing import Iterable
 
 import pandas as pd
 import requests
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 
 from config import HTTP_HEADERS
 
@@ -28,9 +31,22 @@ HOURLY_VARS = [
     "carbon_monoxide",
 ]
 
-# Open-Meteo accepts many locations per call; keep batches modest to stay well
-# within URL length and free-tier limits.
-BATCH_SIZE = 40
+# Open-Meteo's free tier rate-limits by request "weight" (locations × days), so
+# keep batches small and pause between calls. Long backfills are date-chunked by
+# the caller (cams_ingest) on top of this.
+BATCH_SIZE = 20
+PAUSE_SECONDS = 1.0
+
+# Session with automatic backoff on 429/5xx (respects Retry-After).
+_session = requests.Session()
+_session.mount(
+    "https://",
+    HTTPAdapter(max_retries=Retry(
+        total=6, backoff_factor=2.0,
+        status_forcelist=[429, 500, 502, 503, 504],
+        respect_retry_after_header=True, allowed_methods=["GET"],
+    )),
+)
 
 
 def _parse_one(station_id: str, city_id: str, obj: dict) -> pd.DataFrame:
@@ -82,13 +98,14 @@ def fetch_air_quality(
         if forecast_days is not None:
             params["forecast_days"] = forecast_days
 
-        resp = requests.get(AQ_URL, params=params, headers=HTTP_HEADERS, timeout=timeout)
+        resp = _session.get(AQ_URL, params=params, headers=HTTP_HEADERS, timeout=timeout)
         resp.raise_for_status()
         body = resp.json()
         # Single-location responses are an object; multi-location are a list.
         objs = body if isinstance(body, list) else [body]
         for (city_id, station_id, _lat, _lon), obj in zip(batch, objs):
             frames.append(_parse_one(station_id, city_id, obj))
+        time.sleep(PAUSE_SECONDS)  # be polite to the free tier
 
     if not frames:
         return pd.DataFrame()
