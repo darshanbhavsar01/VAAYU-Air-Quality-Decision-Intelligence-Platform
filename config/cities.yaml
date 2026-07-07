@@ -1,0 +1,69 @@
+# VAAYU city registry — the entire nationwide/multi-city mechanism (CLAUDE.md §2.1, §5.1)
+# is "add a row here." No code changes needed to onboard a city.
+#
+# Fields:
+#   city_id            short slug, used in BigQuery city_id column and API ?city= param
+#   name / state        display name
+#   bbox                [lon_min, lat_min, lon_max, lat_max] — drives Tier A grid clipping
+#                        and OpenAQ/WAQI/Open-Meteo queries
+#   tier                "A" (grid only) or "B" (grid + ward). Starts "A" until a
+#                        ward_geojson_path is validated by scripts/validate_ward_geojson.py —
+#                        never hand-set to B without running that script.
+#   ward_geojson_path   null until validated; path under data/wards/<city_id>.geojson once confirmed
+#   languages           advisory languages beyond English (vaani agent)
+#   priority            build order — Bengaluru is the primary demo city (CLAUDE.md §5.1)
+
+cities:
+  - city_id: bengaluru
+    name: Bengaluru
+    state: Karnataka
+    bbox: [77.35, 12.75, 77.85, 13.20]
+    tier: A
+    ward_geojson_path: null
+    languages: [kn, hi]
+    priority: 1
+
+  - city_id: delhi
+    name: Delhi
+    state: Delhi
+    bbox: [76.84, 28.40, 77.35, 28.88]
+    tier: A
+    ward_geojson_path: null
+    languages: [hi]
+    priority: 2
+
+  - city_id: mumbai
+    name: Mumbai
+    state: Maharashtra
+    bbox: [72.77, 18.89, 72.98, 19.28]
+    tier: A
+    ward_geojson_path: null
+    languages: [mr, hi]
+    priority: 3
+
+  - city_id: chennai
+    name: Chennai
+    state: Tamil Nadu
+    bbox: [80.15, 12.90, 80.32, 13.24]
+    tier: A
+    ward_geojson_path: null
+    languages: [ta]
+    priority: 4
+
+  - city_id: kolkata
+    name: Kolkata
+    state: West Bengal
+    bbox: [88.24, 22.45, 88.45, 22.65]
+    tier: A
+    ward_geojson_path: null
+    languages: [bn]
+    priority: 5
+
+  - city_id: hyderabad
+    name: Hyderabad
+    state: Telangana
+    bbox: [78.30, 17.25, 78.65, 17.55]
+    tier: A
+    ward_geojson_path: null
+    languages: [te]
+    priority: 6

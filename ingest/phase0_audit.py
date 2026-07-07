@@ -1,37 +1,46 @@
-"""Phase 0 — De-risk. Audit CPCB Bengaluru data quality and OpenAQ backfill.
+"""Phase 0 — De-risk (nationwide/multi-city version, CLAUDE.md §12 Phase 0).
 
-Produces a GO / CAUTION / NO-GO recommendation for the forecast product, and
-writes a human-readable report to docs/PHASE0_AUDIT.md plus a machine-readable
-snapshot to evaluation/results/phase0_audit.json.
+Deliverable: pull CPCB data for Bengaluru (primary demo city, full audit) +
+spot-check station availability for the other Tier-1 metros in
+config/cities.yaml, and audit ward GeoJSON availability for the target city
+list. Produces a GO/CAUTION/NO-GO verdict plus a realistic Tier B (ward-mode)
+city count.
 
-The two data sources answer different questions:
-  - CPCB live snapshot (data.gov.in): how many Bengaluru stations exist right
-    now, what they measure, and how fresh (staleness) each reading is.
-  - OpenAQ v3: whether we can actually get the 90-day history the models need.
+Sources:
+  - CPCB live snapshot (data.gov.in): station count, pollutants, staleness,
+    per city, from ONE national fetch (§5: it's genuinely one API, filtered
+    per city — not one integration per city).
+  - WAQI (aqicn.org): secondary/cross-validation station count per city, via
+    map/bounds. Replaces OpenAQ (email verification has been unreliable) —
+    see ingest/waqi.py docstring for why this does not give deep history.
+  - Ward GeoJSON: checked against data/wards/<city_id>.geojson; none exist
+    yet in this repo, so every city currently reports Tier A (grid only).
 
 Run: python ingest/phase0_audit.py
-Each source is independent — a missing key for one still lets the other run.
+Each source is independent — a missing key for one still lets others run.
 """
 from __future__ import annotations
 
 import json
-import statistics
 from datetime import datetime, timezone
 from typing import Any
 
 import config
 import cpcb
-import openaq
+import waqi
+from cities import City, load_cities
 
-# --- GO/NO-GO thresholds (documented so judges can see the bar we set) ---
+# --- GO/NO-GO thresholds for the PRIMARY demo city (Bengaluru) ---
 MIN_STATIONS_GO = 8          # fewer than this and IDW interpolation is too sparse
 MIN_STATIONS_CAUTION = 5
 STALE_HOURS = 3              # CLAUDE.md sentinel definition of "stale"
-MIN_HISTORY_COVERAGE = 0.70  # fraction of last 30 days with data to call backfill viable
+
+# Spot-check bar for secondary Tier-1 cities — lower bar, just "is there a signal at all"
+MIN_STATIONS_SPOTCHECK = 2
 
 
 # ---------------------------------------------------------------------------
-# CPCB snapshot audit
+# CPCB per-city audit
 # ---------------------------------------------------------------------------
 def _parse_last_update(raw: str) -> datetime | None:
     for fmt in ("%d-%m-%Y %H:%M:%S", "%Y-%m-%d %H:%M:%S", "%d-%b-%Y %H:%M:%S", "%Y-%m-%dT%H:%M:%S"):
@@ -42,46 +51,23 @@ def _parse_last_update(raw: str) -> datetime | None:
     return None
 
 
-def audit_cpcb() -> dict[str, Any]:
-    try:
-        records = cpcb.fetch_cpcb_snapshot()
-    except SystemExit as e:
-        return {"available": False, "reason": str(e)}
-    except Exception as e:  # noqa: BLE001 — de-risk script wants the reason, not a stack
-        return {"available": False, "reason": f"{type(e).__name__}: {e}"}
-
-    city_recs = cpcb.filter_city(records, config.CITY_NAME, config.CITY_STATE)
+def audit_city_cpcb(city: City, records: list[dict[str, Any]]) -> dict[str, Any]:
+    city_recs = cpcb.filter_city(records, city.name, city.state)
     now = datetime.now(timezone.utc)
 
     stations: dict[str, dict[str, Any]] = {}
     for r in city_recs:
         name = r.get("station") or r.get("station_name") or "UNKNOWN"
-        st = stations.setdefault(
-            name,
-            {"pollutants": set(), "last_updates": [], "lat": None, "lon": None},
-        )
+        st = stations.setdefault(name, {"pollutants": set(), "last_updates": []})
         pol = r.get("pollutant_id") or r.get("pollutant") or r.get("parameter")
         if pol:
             st["pollutants"].add(str(pol))
         lu = _parse_last_update(str(r.get("last_update", "")))
         if lu:
             st["last_updates"].append(lu)
-        for latk in ("latitude", "lat"):
-            if r.get(latk) not in (None, ""):
-                try:
-                    st["lat"] = float(r[latk])
-                except (TypeError, ValueError):
-                    pass
-        for lonk in ("longitude", "lon", "long"):
-            if r.get(lonk) not in (None, ""):
-                try:
-                    st["lon"] = float(r[lonk])
-                except (TypeError, ValueError):
-                    pass
 
     station_rows = []
     stale_count = 0
-    with_coords = 0
     pm25_count = 0
     for name, st in sorted(stations.items()):
         latest = max(st["last_updates"]) if st["last_updates"] else None
@@ -89,8 +75,6 @@ def audit_cpcb() -> dict[str, Any]:
         is_stale = age_h is None or age_h > STALE_HOURS
         if is_stale:
             stale_count += 1
-        if st["lat"] is not None and st["lon"] is not None:
-            with_coords += 1
         has_pm25 = any("2.5" in p for p in st["pollutants"])
         if has_pm25:
             pm25_count += 1
@@ -102,187 +86,219 @@ def audit_cpcb() -> dict[str, Any]:
                 "latest_update": latest.isoformat() if latest else None,
                 "age_hours": age_h,
                 "stale": is_stale,
-                "lat": st["lat"],
-                "lon": st["lon"],
             }
         )
 
     return {
-        "available": True,
-        "total_india_records": len(records),
+        "city_id": city.city_id,
+        "city_name": city.name,
         "city_records": len(city_recs),
         "station_count": len(stations),
-        "stations_with_coords": with_coords,
         "stations_with_pm25": pm25_count,
         "stale_count": stale_count,
         "stations": station_rows,
     }
 
 
-# ---------------------------------------------------------------------------
-# OpenAQ backfill probe
-# ---------------------------------------------------------------------------
-def audit_openaq(sample: int = 5) -> dict[str, Any]:
+def audit_all_cities_cpcb() -> dict[str, Any]:
     try:
-        locations = openaq.fetch_locations()
+        records = cpcb.fetch_cpcb_snapshot()
     except SystemExit as e:
         return {"available": False, "reason": str(e)}
     except Exception as e:  # noqa: BLE001
         return {"available": False, "reason": f"{type(e).__name__}: {e}"}
 
-    # Probe daily coverage for PM2.5 sensors on a sample of locations.
-    coverage_samples = []
-    probed = []
-    for loc in locations:
-        if len(probed) >= sample:
-            break
-        pm_sensor = None
-        for s in loc.get("sensors", []):
-            pname = str(s.get("parameter", {}).get("name", "")).lower()
-            if pname in ("pm25", "pm2.5"):
-                pm_sensor = s
-                break
-        if not pm_sensor:
-            continue
+    per_city = [audit_city_cpcb(c, records) for c in load_cities()]
+    return {"available": True, "total_india_records": len(records), "cities": per_city}
+
+
+# ---------------------------------------------------------------------------
+# WAQI cross-check (station density per city)
+# ---------------------------------------------------------------------------
+def audit_waqi() -> dict[str, Any]:
+    per_city = []
+    any_ok = False
+    last_error = None
+    for c in load_cities():
         try:
-            days = openaq.fetch_sensor_daily_coverage(pm_sensor["id"], days=30)
+            stations = waqi.fetch_stations_in_bbox(*c.bbox)
+            any_ok = True
+            per_city.append({"city_id": c.city_id, "city_name": c.name, "station_count": len(stations)})
         except Exception as e:  # noqa: BLE001
-            probed.append({"location": loc.get("name"), "error": f"{type(e).__name__}: {e}"})
-            continue
-        cov = round(len(days) / 30.0, 2)
-        coverage_samples.append(cov)
-        probed.append(
+            last_error = f"{type(e).__name__}: {e}"
+            per_city.append({"city_id": c.city_id, "city_name": c.name, "error": last_error})
+    return {"available": any_ok, "reason": None if any_ok else last_error, "cities": per_city}
+
+
+# ---------------------------------------------------------------------------
+# Ward GeoJSON audit
+# ---------------------------------------------------------------------------
+def audit_ward_geojson() -> dict[str, Any]:
+    wards_dir = config.DATA_DIR / "wards"
+    rows = []
+    validated_count = 0
+    for c in load_cities():
+        expected = wards_dir / f"{c.city_id}.geojson"
+        exists = expected.exists()
+        if exists:
+            validated_count += 1
+        rows.append(
             {
-                "location": loc.get("name"),
-                "sensor_id": pm_sensor["id"],
-                "days_with_data_of_30": len(days),
-                "coverage": cov,
+                "city_id": c.city_id,
+                "city_name": c.name,
+                "registry_tier": c.tier,
+                "geojson_found": exists,
+                "path_checked": str(expected.relative_to(config.REPO_ROOT)),
             }
         )
-
-    return {
-        "available": True,
-        "location_count": len(locations),
-        "mean_pm25_coverage_30d": (
-            round(statistics.mean(coverage_samples), 2) if coverage_samples else None
-        ),
-        "probed": probed,
-    }
+    return {"validated_tier_b_count": validated_count, "cities": rows}
 
 
 # ---------------------------------------------------------------------------
 # Verdict + report
 # ---------------------------------------------------------------------------
-def decide(cpcb_a: dict[str, Any], openaq_a: dict[str, Any]) -> tuple[str, list[str]]:
+def decide(
+    cpcb_a: dict[str, Any], waqi_a: dict[str, Any], ward_a: dict[str, Any]
+) -> tuple[str, list[str]]:
     notes: list[str] = []
-    n = cpcb_a.get("station_count", 0) if cpcb_a.get("available") else 0
 
     if not cpcb_a.get("available"):
         notes.append(f"CPCB snapshot unavailable: {cpcb_a.get('reason')}")
-    if not openaq_a.get("available"):
-        notes.append(f"OpenAQ backfill unavailable: {openaq_a.get('reason')}")
+        return "NO-GO", notes
+    if not waqi_a.get("available"):
+        notes.append(f"WAQI cross-check unavailable: {waqi_a.get('reason')} (non-blocking, secondary source only)")
 
+    primary = next((c for c in cpcb_a["cities"] if c["city_id"] == "bengaluru"), None)
+    if primary is None:
+        return "NO-GO", ["Primary city 'bengaluru' missing from cities.yaml results."]
+
+    n = primary["station_count"]
     if n >= MIN_STATIONS_GO:
-        station_verdict = "GO"
+        verdict = "GO"
     elif n >= MIN_STATIONS_CAUTION:
-        station_verdict = "CAUTION"
-        notes.append(f"Only {n} stations — IDW will be sparse; add a distance-confidence layer.")
-    else:
-        station_verdict = "NO-GO"
-        notes.append(f"Only {n} stations found — too sparse for ward interpolation.")
-
-    hist = openaq_a.get("mean_pm25_coverage_30d")
-    if hist is not None and hist >= MIN_HISTORY_COVERAGE:
-        notes.append(f"OpenAQ 30d PM2.5 coverage ~{hist:.0%} — 90-day backfill viable.")
-    elif hist is not None:
-        notes.append(f"OpenAQ 30d PM2.5 coverage only ~{hist:.0%} — backfill will have gaps.")
-
-    verdict = station_verdict
-    if station_verdict == "GO" and (hist is None or hist < MIN_HISTORY_COVERAGE):
         verdict = "CAUTION"
+        notes.append(f"Bengaluru: only {n} CPCB stations — IDW will be sparse; ship a visible confidence layer.")
+    else:
+        verdict = "NO-GO"
+        notes.append(f"Bengaluru: only {n} CPCB stations — too sparse for the primary demo city.")
+
+    weak_spotchecks = [
+        c["city_name"] for c in cpcb_a["cities"]
+        if c["city_id"] != "bengaluru" and c["station_count"] < MIN_STATIONS_SPOTCHECK
+    ]
+    if weak_spotchecks:
+        notes.append(
+            f"Spot-check below {MIN_STATIONS_SPOTCHECK} stations: {', '.join(weak_spotchecks)} — "
+            f"keep these Tier A (grid) only, do not promise ward view."
+        )
+
+    if ward_a["validated_tier_b_count"] == 0:
+        notes.append(
+            "No validated ward GeoJSON files yet — every city is Tier A (grid) today. "
+            "Bengaluru ward boundary is the Phase 1 priority per CLAUDE.md §5.1."
+        )
+        if verdict == "GO":
+            verdict = "CAUTION"
+
+    notes.append(
+        "Reminder: neither CPCB (live snapshot only) nor WAQI (current-reading API) gives "
+        "pre-existing deep history — 90-day backfill accrues from VAAYU's own hourly ingest "
+        "starting Phase 1, not from a one-shot pull. State this in the pitch (docs/LIMITATIONS.md)."
+    )
+
     return verdict, notes
 
 
-def render_markdown(cpcb_a: dict[str, Any], openaq_a: dict[str, Any], verdict: str, notes: list[str]) -> str:
+def render_markdown(
+    cpcb_a: dict[str, Any], waqi_a: dict[str, Any], ward_a: dict[str, Any],
+    verdict: str, notes: list[str],
+) -> str:
     ts = datetime.now(timezone.utc).isoformat(timespec="seconds")
     lines = [
-        "# Phase 0 — Data De-risk Audit",
+        "# Phase 0 — Data De-risk Audit (nationwide/multi-city)",
         "",
-        f"_Generated: {ts} · City: {config.CITY_NAME}, {config.CITY_STATE}_",
+        f"_Generated: {ts}_",
         "",
         f"## Verdict: **{verdict}**",
         "",
-        "### GO/NO-GO criteria",
+        "### GO/NO-GO criteria (primary demo city: Bengaluru)",
         f"- Stations: GO ≥ {MIN_STATIONS_GO}, CAUTION ≥ {MIN_STATIONS_CAUTION}, else NO-GO",
         f"- Staleness threshold: > {STALE_HOURS}h since last update",
-        f"- Backfill viable if OpenAQ 30-day PM2.5 coverage ≥ {MIN_HISTORY_COVERAGE:.0%}",
+        f"- Secondary Tier-1 cities spot-checked at a lower bar (≥ {MIN_STATIONS_SPOTCHECK} stations = usable signal)",
         "",
         "### Notes",
     ]
     lines += [f"- {x}" for x in notes] or ["- (none)"]
 
-    lines += ["", "## CPCB live snapshot (data.gov.in)"]
+    lines += ["", "## CPCB per-city station audit"]
     if cpcb_a.get("available"):
         lines += [
-            f"- Total India records in snapshot: {cpcb_a['total_india_records']}",
-            f"- Bengaluru station×pollutant records: {cpcb_a['city_records']}",
-            f"- **Distinct stations: {cpcb_a['station_count']}**",
-            f"- Stations with coordinates: {cpcb_a['stations_with_coords']}",
-            f"- Stations reporting PM2.5: {cpcb_a['stations_with_pm25']}",
-            f"- Stale stations (> {STALE_HOURS}h): {cpcb_a['stale_count']}",
+            f"- Total India records in one national snapshot: {cpcb_a['total_india_records']}",
             "",
-            "| Station | PM2.5 | Age (h) | Stale | Lat | Lon | Pollutants |",
-            "|---|---|---|---|---|---|---|",
+            "| City | Stations | With PM2.5 | Stale (>3h) |",
+            "|---|---|---|---|",
         ]
-        for s in cpcb_a["stations"]:
+        for c in cpcb_a["cities"]:
             lines.append(
-                f"| {s['station']} | {'✓' if s['has_pm25'] else '—'} | "
-                f"{s['age_hours'] if s['age_hours'] is not None else '?'} | "
-                f"{'⚠' if s['stale'] else 'ok'} | "
-                f"{s['lat'] if s['lat'] is not None else '—'} | "
-                f"{s['lon'] if s['lon'] is not None else '—'} | "
-                f"{', '.join(s['pollutants'])} |"
+                f"| {c['city_name']} | {c['station_count']} | {c['stations_with_pm25']} | {c['stale_count']} |"
             )
+        primary = next((c for c in cpcb_a["cities"] if c["city_id"] == "bengaluru"), None)
+        if primary:
+            lines += [
+                "",
+                "### Bengaluru station detail",
+                "| Station | PM2.5 | Age (h) | Stale | Pollutants |",
+                "|---|---|---|---|---|",
+            ]
+            for s in primary["stations"]:
+                lines.append(
+                    f"| {s['station']} | {'✓' if s['has_pm25'] else '—'} | "
+                    f"{s['age_hours'] if s['age_hours'] is not None else '?'} | "
+                    f"{'⚠' if s['stale'] else 'ok'} | {', '.join(s['pollutants'])} |"
+                )
     else:
         lines.append(f"- Unavailable: {cpcb_a.get('reason')}")
 
-    lines += ["", "## OpenAQ historical backfill probe"]
-    if openaq_a.get("available"):
-        lines += [
-            f"- Locations in Bengaluru bbox: {openaq_a['location_count']}",
-            f"- Mean 30-day PM2.5 coverage (sampled): {openaq_a['mean_pm25_coverage_30d']}",
-            "",
-            "| Location | Sensor | Days w/ data (of 30) | Coverage |",
-            "|---|---|---|---|",
-        ]
-        for p in openaq_a["probed"]:
-            if "error" in p:
-                lines.append(f"| {p['location']} | — | — | error: {p['error']} |")
-            else:
-                lines.append(
-                    f"| {p['location']} | {p['sensor_id']} | "
-                    f"{p['days_with_data_of_30']} | {p['coverage']} |"
-                )
+    lines += ["", "## WAQI cross-check (station density per city)"]
+    if waqi_a.get("available"):
+        lines += ["| City | WAQI stations in bbox |", "|---|---|"]
+        for c in waqi_a["cities"]:
+            val = c.get("station_count", f"error: {c.get('error')}")
+            lines.append(f"| {c['city_name']} | {val} |")
     else:
-        lines.append(f"- Unavailable: {openaq_a.get('reason')}")
+        lines.append(f"- Unavailable: {waqi_a.get('reason')}")
+
+    lines += ["", "## Ward GeoJSON audit (Tier B eligibility)"]
+    lines += [
+        f"- Validated Tier B cities: {ward_a['validated_tier_b_count']} / {len(ward_a['cities'])}",
+        "",
+        "| City | Registry tier | GeoJSON found | Path checked |",
+        "|---|---|---|---|",
+    ]
+    for c in ward_a["cities"]:
+        lines.append(
+            f"| {c['city_name']} | {c['registry_tier']} | "
+            f"{'✓' if c['geojson_found'] else '—'} | `{c['path_checked']}` |"
+        )
 
     lines += ["", "---", "_Re-run: `python ingest/phase0_audit.py`_", ""]
     return "\n".join(lines)
 
 
 def main() -> None:
-    print("Phase 0 audit — pulling CPCB snapshot and probing OpenAQ...")
-    cpcb_a = audit_cpcb()
-    openaq_a = audit_openaq()
-    verdict, notes = decide(cpcb_a, openaq_a)
+    print("Phase 0 audit — CPCB nationwide snapshot, WAQI cross-check, ward GeoJSON audit...")
+    cpcb_a = audit_all_cities_cpcb()
+    waqi_a = audit_waqi()
+    ward_a = audit_ward_geojson()
+    verdict, notes = decide(cpcb_a, waqi_a, ward_a)
 
     result = {
         "generated": datetime.now(timezone.utc).isoformat(),
-        "city": config.CITY_NAME,
         "verdict": verdict,
         "notes": notes,
         "cpcb": cpcb_a,
-        "openaq": openaq_a,
+        "waqi": waqi_a,
+        "ward_geojson": ward_a,
     }
 
     out_json = config.REPO_ROOT / "evaluation" / "results" / "phase0_audit.json"
@@ -290,7 +306,7 @@ def main() -> None:
     out_json.write_text(json.dumps(result, indent=2, default=str), encoding="utf-8")
 
     out_md = config.REPO_ROOT / "docs" / "PHASE0_AUDIT.md"
-    out_md.write_text(render_markdown(cpcb_a, openaq_a, verdict, notes), encoding="utf-8")
+    out_md.write_text(render_markdown(cpcb_a, waqi_a, ward_a, verdict, notes), encoding="utf-8")
 
     print(f"\nVERDICT: {verdict}")
     for note in notes:

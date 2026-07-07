@@ -53,8 +53,13 @@ def filter_city(records: list[dict[str, Any]], city: str, state: str) -> list[di
 
 
 if __name__ == "__main__":
+    from cities import load_cities
+
     recs = fetch_cpcb_snapshot()
     print(f"Fetched {len(recs)} total CPCB records (all India).")
     if recs:
         print("Sample record keys:", sorted(recs[0].keys()))
-        print("Sample record:", recs[0])
+    print()
+    for c in load_cities():
+        n = len(filter_city(recs, c.name, c.state))
+        print(f"  {c.name:12s} ({c.city_id}): {n} station×pollutant records")

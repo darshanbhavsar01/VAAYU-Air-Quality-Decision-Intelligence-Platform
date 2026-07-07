@@ -18,14 +18,18 @@ except ImportError:  # dotenv optional in cloud where env is injected
 
 # --- Data source keys ---
 DATA_GOV_IN_API_KEY = os.getenv("DATA_GOV_IN_API_KEY", "")
-OPENAQ_API_KEY = os.getenv("OPENAQ_API_KEY", "")
+OPENAQ_API_KEY = os.getenv("OPENAQ_API_KEY", "")  # optional now; WAQI is the primary secondary source
+WAQI_API_TOKEN = os.getenv("WAQI_API_TOKEN", "")  # https://aqicn.org/data-platform/token/ (instant, no email wait)
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 
 # --- GCP ---
 GCP_PROJECT_ID = os.getenv("GCP_PROJECT_ID", "")
 BQ_DATASET = os.getenv("BQ_DATASET", "vaayu")
 
-# --- City targeting (config-driven; Bengaluru is the pilot city) ---
+# --- City targeting ---
+# Multi-city is config-driven via config/cities.yaml (see ingest/cities.py).
+# CITY_NAME/CITY_STATE below are legacy single-city fallbacks, kept only for
+# scripts that haven't been migrated to iterate the registry yet.
 CITY_NAME = os.getenv("CITY_NAME", "Bengaluru")
 CITY_STATE = os.getenv("CITY_STATE", "Karnataka")
 
