@@ -8,7 +8,8 @@ written estimate here before the service is used.
 
 | Date | Item | Est. cost (₹) | Running total (₹) | Notes |
 |---|---|---|---|---|
-| 2026-07-07 | Phase 0 data audit (data.gov.in + OpenAQ + Open-Meteo) | 0 | 0 | All free public APIs, no GCP billing |
+| 2026-07-07 | Phase 0 data audit (data.gov.in + WAQI + Open-Meteo) | 0 | 0 | All free public APIs, no GCP billing |
+| 2026-07-08 | Phase 1 BigQuery: dataset+schema, CPCB ingest (735 rows), 91-day weather backfill (13k rows) | 0 | 0 | Load jobs are free; MERGE queries scan KBs, far inside 1TB/mo free tier. Storage ~few MB (<10GB free). |
 
 **Current total: ₹0 / ₹500.**
 

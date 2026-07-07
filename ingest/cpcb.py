@@ -8,6 +8,7 @@ pollutants they report, and how fresh each reading is (staleness).
 """
 from __future__ import annotations
 
+import re
 from datetime import datetime, timedelta, timezone
 from typing import Any
 
@@ -62,6 +63,27 @@ def parse_cpcb_timestamp(raw: str) -> datetime | None:
         except (ValueError, AttributeError):
             continue
     return None
+
+
+def station_slug(name: str) -> str:
+    """Stable id slug from a station name.
+
+    "BTM Layout, Bengaluru - CPCB" -> "btm_layout_bengaluru_cpcb".
+    Deterministic so the same station always maps to the same station_id across
+    ingests (required for idempotent MERGE and the stations dimension).
+    """
+    s = name.lower().strip()
+    s = re.sub(r"[^a-z0-9]+", "_", s)
+    return s.strip("_")
+
+
+def safe_float(v: Any) -> float | None:
+    """CPCB uses the string 'NA' for missing values; map anything unparseable to None."""
+    try:
+        f = float(v)
+        return f if f == f else None  # drop NaN
+    except (TypeError, ValueError):
+        return None
 
 
 def filter_city(records: list[dict[str, Any]], city: str, state: str) -> list[dict[str, Any]]:
