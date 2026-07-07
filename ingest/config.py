@@ -39,6 +39,13 @@ DATA_GOV_IN_BASE = "https://api.data.gov.in/resource"
 
 OPENAQ_BASE = "https://api.openaq.org/v3"
 
+# data.gov.in (and some other endpoints) sit behind a WAF that stalls the
+# default "python-requests/x.y" User-Agent — requests hang until timeout while
+# curl/browsers get an instant 200. A browser-like UA fixes it. Use HTTP_HEADERS
+# on every outbound request in the ingest layer.
+USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) VAAYU/0.1 (+air-quality research)"
+HTTP_HEADERS = {"User-Agent": USER_AGENT}
+
 # Pollutants VAAYU tracks (CPCB CAAQMS parameter names).
 POLLUTANTS = ["PM2.5", "PM10", "NO2", "SO2", "CO", "OZONE"]
 

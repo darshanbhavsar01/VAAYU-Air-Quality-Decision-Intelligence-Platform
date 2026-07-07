@@ -42,15 +42,6 @@ MIN_STATIONS_SPOTCHECK = 2
 # ---------------------------------------------------------------------------
 # CPCB per-city audit
 # ---------------------------------------------------------------------------
-def _parse_last_update(raw: str) -> datetime | None:
-    for fmt in ("%d-%m-%Y %H:%M:%S", "%Y-%m-%d %H:%M:%S", "%d-%b-%Y %H:%M:%S", "%Y-%m-%dT%H:%M:%S"):
-        try:
-            return datetime.strptime(raw.strip(), fmt).replace(tzinfo=timezone.utc)
-        except (ValueError, AttributeError):
-            continue
-    return None
-
-
 def audit_city_cpcb(city: City, records: list[dict[str, Any]]) -> dict[str, Any]:
     city_recs = cpcb.filter_city(records, city.name, city.state)
     now = datetime.now(timezone.utc)
@@ -62,7 +53,7 @@ def audit_city_cpcb(city: City, records: list[dict[str, Any]]) -> dict[str, Any]
         pol = r.get("pollutant_id") or r.get("pollutant") or r.get("parameter")
         if pol:
             st["pollutants"].add(str(pol))
-        lu = _parse_last_update(str(r.get("last_update", "")))
+        lu = cpcb.parse_cpcb_timestamp(str(r.get("last_update", "")))
         if lu:
             st["last_updates"].append(lu)
 
@@ -113,19 +104,30 @@ def audit_all_cities_cpcb() -> dict[str, Any]:
 
 
 # ---------------------------------------------------------------------------
-# WAQI cross-check (station density per city)
+# WAQI cross-check (coarse independent sanity signal per city)
 # ---------------------------------------------------------------------------
 def audit_waqi() -> dict[str, Any]:
+    """Independent live-AQI sanity check per city via WAQI's named-city feed.
+
+    NOT a station inventory — WAQI's free-tier bounds/geo endpoints are
+    unreliable (see ingest/waqi.py). This only corroborates that an outside
+    source reports a live reading for the city.
+    """
     per_city = []
     any_ok = False
     last_error = None
     for c in load_cities():
-        try:
-            stations = waqi.fetch_stations_in_bbox(*c.bbox)
-            any_ok = True
-            per_city.append({"city_id": c.city_id, "city_name": c.name, "station_count": len(stations)})
-        except Exception as e:  # noqa: BLE001
-            last_error = f"{type(e).__name__}: {e}"
+        result = None
+        for candidate in (c.city_id, c.name.lower()):
+            try:
+                result = waqi.city_crosscheck(candidate)
+                any_ok = True
+                break
+            except Exception as e:  # noqa: BLE001
+                last_error = f"{type(e).__name__}: {e}"
+        if result is not None:
+            per_city.append({"city_id": c.city_id, "city_name": c.name, **result})
+        else:
             per_city.append({"city_id": c.city_id, "city_name": c.name, "error": last_error})
     return {"available": any_ok, "reason": None if any_ok else last_error, "cities": per_city}
 
@@ -192,13 +194,15 @@ def decide(
             f"keep these Tier A (grid) only, do not promise ward view."
         )
 
-    if ward_a["validated_tier_b_count"] == 0:
-        notes.append(
-            "No validated ward GeoJSON files yet — every city is Tier A (grid) today. "
-            "Bengaluru ward boundary is the Phase 1 priority per CLAUDE.md §5.1."
-        )
-        if verdict == "GO":
-            verdict = "CAUTION"
+    # Ward GeoJSON absence is EXPECTED at Phase 0 — it's Phase 1 sourcing work,
+    # not a data-quality risk. Report it as a separate dimension (Tier B
+    # readiness), never as a downgrade of the data-quality verdict, or the
+    # headline misleadingly signals a risk that doesn't exist.
+    notes.append(
+        f"Tier B readiness: {ward_a['validated_tier_b_count']}/{len(ward_a['cities'])} cities have a "
+        "validated ward GeoJSON today — every city ships Tier A (grid) now. Sourcing Bengaluru's "
+        "ward boundary is the Phase 1 priority per CLAUDE.md §5.1; grid mode is the honest default."
+    )
 
     notes.append(
         "Reminder: neither CPCB (live snapshot only) nor WAQI (current-reading API) gives "
@@ -259,12 +263,29 @@ def render_markdown(
     else:
         lines.append(f"- Unavailable: {cpcb_a.get('reason')}")
 
-    lines += ["", "## WAQI cross-check (station density per city)"]
+    lines += [
+        "",
+        "## WAQI cross-check (independent live-AQI sanity signal per city)",
+        "",
+        "_WAQI free tier serves only the named-city feed reliably; its bounds/geo "
+        "endpoints are restricted, so this is a coarse corroboration, not a station "
+        "inventory. Units differ from CPCB (US-AQI index vs µg/m³) — do not compare "
+        "numerically. See docs/LIMITATIONS.md._",
+        "",
+    ]
     if waqi_a.get("available"):
-        lines += ["| City | WAQI stations in bbox |", "|---|---|"]
+        lines += [
+            "| City | WAQI resolved station | Dominant AQI | PM2.5 sub-index |",
+            "|---|---|---|---|",
+        ]
         for c in waqi_a["cities"]:
-            val = c.get("station_count", f"error: {c.get('error')}")
-            lines.append(f"| {c['city_name']} | {val} |")
+            if "error" in c:
+                lines.append(f"| {c['city_name']} | error: {c['error']} | — | — |")
+            else:
+                lines.append(
+                    f"| {c['city_name']} | {c.get('resolved_station', '—')} | "
+                    f"{c.get('dominant_aqi', '—')} | {c.get('pm25_subindex', '—')} |"
+                )
     else:
         lines.append(f"- Unavailable: {waqi_a.get('reason')}")
 

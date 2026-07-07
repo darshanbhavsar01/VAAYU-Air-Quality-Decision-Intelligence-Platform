@@ -1,0 +1,1855 @@
+{
+  "generated": "2026-07-07T19:09:47.763637+00:00",
+  "verdict": "GO",
+  "notes": [
+    "Tier B readiness: 0/6 cities have a validated ward GeoJSON today \u2014 every city ships Tier A (grid) now. Sourcing Bengaluru's ward boundary is the Phase 1 priority per CLAUDE.md \u00a75.1; grid mode is the honest default.",
+    "Reminder: neither CPCB (live snapshot only) nor WAQI (current-reading API) gives pre-existing deep history \u2014 90-day backfill accrues from VAAYU's own hourly ingest starting Phase 1, not from a one-shot pull. State this in the pitch (docs/LIMITATIONS.md)."
+  ],
+  "cpcb": {
+    "available": true,
+    "total_india_records": 3430,
+    "cities": [
+      {
+        "city_id": "bengaluru",
+        "city_name": "Bengaluru",
+        "city_records": 70,
+        "station_count": 10,
+        "stations_with_pm25": 10,
+        "stale_count": 0,
+        "stations": [
+          {
+            "station": "BTM Layout, Bengaluru - CPCB",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "BWSSB Kadabesanahalli, Bengaluru - CPCB",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "Bapuji Nagar, Bengaluru - KSPCB",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "City Railway Station, Bengaluru - KSPCB",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "Hebbal, Bengaluru - KSPCB",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "Hombegowda Nagar, Bengaluru - KSPCB",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "Jayanagar 5th Block, Bengaluru - KSPCB",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "Jigani, Bengaluru - KSPCB",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "Kasturi Nagar, Bengaluru - KSPCB",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "Silk Board, Bengaluru - KSPCB",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          }
+        ]
+      },
+      {
+        "city_id": "delhi",
+        "city_name": "Delhi",
+        "city_records": 315,
+        "station_count": 45,
+        "stations_with_pm25": 45,
+        "stale_count": 0,
+        "stations": [
+          {
+            "station": "Alipur, Delhi - DPCC",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "Anand Vihar, Delhi - DPCC",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "Ashok Vihar, Delhi - DPCC",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "Aya Nagar, Delhi - IITM",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "Bawana, Delhi - DPCC",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "Burari Crossing, Delhi - IITM",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "CRRI Mathura Road, Delhi - IITM",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "Cantonment Area, Delhi - DPCC",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "Chandni Chowk, Delhi - IITM",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "Commonwealth Sports Complex, Delhi - DPCC",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "DTU, Delhi - CPCB",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "Dr. Karni Singh Shooting Range, Delhi - DPCC",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "Dwarka-Sector 8, Delhi - DPCC ",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "IGI Airport (T3), Delhi - IITM",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "IGNOU_Maidan Garhi, Delhi - DPCC",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "IHBAS, Dilshad Garden, Delhi - CPCB",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "IIT Delhi, Delhi - IITM",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "IMD Lodhi Road, Delhi - IITM",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "ITO, Delhi - CPCB",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "JNU, Delhi - DPCC",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "Jahangirpuri, Delhi - DPCC",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "Jawaharlal Nehru Stadium, Delhi - DPCC",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "Major Dhyan Chand National Stadium, Delhi - DPCC",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "Mandir Marg, Delhi - DPCC",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "Mundka, Delhi - DPCC",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "NSIT Dwarka, Delhi - CPCB",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "NSUT Jaffarpur, Delhi - DPCC",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "Najafgarh, Delhi - DPCC",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "Narela, Delhi - DPCC",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "Nehru Nagar, Delhi - DPCC",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "North Campus, DU, Delhi - IITM",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "Okhla Phase-2, Delhi - DPCC",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "Patparganj, Delhi - DPCC",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "Punjabi Bagh, Delhi - DPCC",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "Pusa, Delhi - DPCC",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "Pusa, Delhi - IITM",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "R K Puram, Delhi - DPCC",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "Rohini, Delhi - DPCC",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "Shadipur, Delhi - CPCB",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "Sirifort, Delhi - CPCB",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "Sonia Vihar, Delhi - DPCC",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "Sri Aurobindo Marg, Delhi - DPCC",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "Talkatora Garden, Delhi - DPCC",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "Vivek Vihar, Delhi - DPCC",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "Wazirpur, Delhi - DPCC",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          }
+        ]
+      },
+      {
+        "city_id": "mumbai",
+        "city_name": "Mumbai",
+        "city_records": 161,
+        "station_count": 23,
+        "stations_with_pm25": 23,
+        "stale_count": 0,
+        "stations": [
+          {
+            "station": "Bandra Kurla Complex, Mumbai - IITM",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "Bandra Kurla Complex, Mumbai - MPCB",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "Borivali East, Mumbai - IITM",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "Byculla, Mumbai - BMC",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "Chakala-Andheri East, Mumbai - IITM",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "Chembur, Mumbai - MPCB",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "Chhatrapati Shivaji Intl. Airport (T2), Mumbai - MPCB",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "Deonar, Mumbai - IITM",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "Ghatkopar, Mumbai - BMC",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "Kandivali West, Mumbai - BMC",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "Kherwadi_Bandra East, Mumbai - MPCB",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "Khindipada-Bhandup West, Mumbai - IITM",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "Kurla, Mumbai - MPCB",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "Malad West, Mumbai - IITM",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "Mazgaon, Mumbai - IITM",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "Mindspace-Malad West, Mumbai - MPCB",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "Mulund West, Mumbai - MPCB",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "Navy Nagar-Colaba, Mumbai - IITM",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "Sewri, Mumbai - BMC",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "Shivaji Nagar, Mumbai - BMC",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "Siddharth Nagar-Worli, Mumbai - IITM",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "Sion, Mumbai - MPCB",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "Worli, Mumbai - MPCB",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          }
+        ]
+      },
+      {
+        "city_id": "chennai",
+        "city_name": "Chennai",
+        "city_records": 49,
+        "station_count": 7,
+        "stations_with_pm25": 7,
+        "stale_count": 0,
+        "stations": [
+          {
+            "station": "Arumbakkam, Chennai - TNPCB",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "Kodungaiyur, Chennai - TNPCB",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "Manali Village, Chennai - TNPCB",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "Manali, Chennai - CPCB",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "Perungudi, Chennai - TNPCB",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "Royapuram, Chennai - TNPCB",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "Velachery Res. Area, Chennai - CPCB",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          }
+        ]
+      },
+      {
+        "city_id": "kolkata",
+        "city_name": "Kolkata",
+        "city_records": 49,
+        "station_count": 7,
+        "stations_with_pm25": 7,
+        "stale_count": 0,
+        "stations": [
+          {
+            "station": "Ballygunge, Kolkata - WBPCB",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "Bidhannagar, Kolkata - WBPCB",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "Fort William, Kolkata - WBPCB",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "Jadavpur, Kolkata - WBPCB",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "Rabindra Bharati University, Kolkata - WBPCB",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "Rabindra Sarobar, Kolkata - WBPCB",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "Victoria, Kolkata - WBPCB",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          }
+        ]
+      },
+      {
+        "city_id": "hyderabad",
+        "city_name": "Hyderabad",
+        "city_records": 91,
+        "station_count": 13,
+        "stations_with_pm25": 13,
+        "stale_count": 0,
+        "stations": [
+          {
+            "station": "Central University, Hyderabad - TSPCB",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "ECIL Kapra, Hyderabad - TSPCB",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "ICRISAT Patancheru, Hyderabad - TSPCB",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "IDA Pashamylaram, Hyderabad - TSPCB",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "IITH Kandi, Hyderabad - TSPCB",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "Kokapet, Hyderabad - TSPCB",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "Kompally Municipal Office, Hyderabad - TSPCB",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "Nacharam_TSIIC IALA, Hyderabad - TSPCB",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "New Malakpet, Hyderabad - TSPCB",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "Ramachandrapuram, Hyderabad - TSPCB",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "Sanathnagar, Hyderabad - TSPCB",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "Somajiguda, Hyderabad - TSPCB",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          },
+          {
+            "station": "Zoo Park, Hyderabad - TSPCB",
+            "pollutants": [
+              "CO",
+              "NH3",
+              "NO2",
+              "OZONE",
+              "PM10",
+              "PM2.5",
+              "SO2"
+            ],
+            "has_pm25": true,
+            "latest_update": "2026-07-08T00:00:00+05:30",
+            "age_hours": 0.7,
+            "stale": false
+          }
+        ]
+      }
+    ]
+  },
+  "waqi": {
+    "available": true,
+    "reason": null,
+    "cities": [
+      {
+        "city_id": "bengaluru",
+        "city_name": "Bengaluru",
+        "resolved_station": "Hombegowda Nagar, Bengaluru, India",
+        "dominant_aqi": 53,
+        "pm25_subindex": 53,
+        "time": "2026-06-23 10:00:00"
+      },
+      {
+        "city_id": "delhi",
+        "city_name": "Delhi",
+        "resolved_station": "Major Dhyan Chand National Stadium, Delhi, Delhi, India",
+        "dominant_aqi": 82,
+        "pm25_subindex": 82,
+        "time": "2026-07-08 00:00:00"
+      },
+      {
+        "city_id": "mumbai",
+        "city_name": "Mumbai",
+        "resolved_station": "Mumbai US Consulate, India (\u092e\u0941\u0902\u092c\u0908 \u0905\u092e\u0947\u0930\u093f\u0915\u0940 \u0935\u093e\u0923\u093f\u091c\u094d\u092f \u0926\u0942\u0924\u093e\u0935\u093e\u0938)",
+        "dominant_aqi": 158,
+        "pm25_subindex": 158,
+        "time": "2025-03-04 06:00:00"
+      },
+      {
+        "city_id": "chennai",
+        "city_name": "Chennai",
+        "resolved_station": "Chennai US Consulate, Chennai, India (\u091a\u0947\u0928\u094d\u0928\u0908 \u0905\u092e\u0947\u0930\u093f\u0915\u0940 \u0935\u093e\u0923\u093f\u091c\u094d\u092f \u0926\u0942\u0924\u093e\u0935\u093e\u0938)",
+        "dominant_aqi": 46,
+        "pm25_subindex": 46,
+        "time": "2025-03-04 17:00:00"
+      },
+      {
+        "city_id": "kolkata",
+        "city_name": "Kolkata",
+        "resolved_station": "Kolkata US Consulate, India (\u0915\u094b\u0932\u0915\u093e\u0924\u093e \u0905\u092e\u0947\u0930\u093f\u0915\u0940 \u0935\u093e\u0923\u093f\u091c\u094d\u092f \u0926\u0942\u0924\u093e\u0935\u093e\u0938)",
+        "dominant_aqi": 172,
+        "pm25_subindex": 172,
+        "time": "2025-02-21 21:00:00"
+      },
+      {
+        "city_id": "hyderabad",
+        "city_name": "Hyderabad",
+        "resolved_station": "Hyderabad US Consulate, India (\u0939\u0948\u0926\u0930\u093e\u092c\u093e\u0926 \u0905\u092e\u0947\u0930\u093f\u0915\u0940 \u0935\u093e\u0923\u093f\u091c\u094d\u092f \u0926\u0942\u0924\u093e\u0935\u093e\u0938)",
+        "dominant_aqi": 93,
+        "pm25_subindex": 93,
+        "time": "2025-03-04 17:00:00"
+      }
+    ]
+  },
+  "ward_geojson": {
+    "validated_tier_b_count": 0,
+    "cities": [
+      {
+        "city_id": "bengaluru",
+        "city_name": "Bengaluru",
+        "registry_tier": "A",
+        "geojson_found": false,
+        "path_checked": "data\\wards\\bengaluru.geojson"
+      },
+      {
+        "city_id": "delhi",
+        "city_name": "Delhi",
+        "registry_tier": "A",
+        "geojson_found": false,
+        "path_checked": "data\\wards\\delhi.geojson"
+      },
+      {
+        "city_id": "mumbai",
+        "city_name": "Mumbai",
+        "registry_tier": "A",
+        "geojson_found": false,
+        "path_checked": "data\\wards\\mumbai.geojson"
+      },
+      {
+        "city_id": "chennai",
+        "city_name": "Chennai",
+        "registry_tier": "A",
+        "geojson_found": false,
+        "path_checked": "data\\wards\\chennai.geojson"
+      },
+      {
+        "city_id": "kolkata",
+        "city_name": "Kolkata",
+        "registry_tier": "A",
+        "geojson_found": false,
+        "path_checked": "data\\wards\\kolkata.geojson"
+      },
+      {
+        "city_id": "hyderabad",
+        "city_name": "Hyderabad",
+        "registry_tier": "A",
+        "geojson_found": false,
+        "path_checked": "data\\wards\\hyderabad.geojson"
+      }
+    ]
+  }
+}
