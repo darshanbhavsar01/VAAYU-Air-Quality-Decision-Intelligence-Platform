@@ -1,0 +1,4 @@
+# VAAYU — pinned top-level deps. Python 3.11+.
+requests>=2.31
+pandas>=2.2
+python-dotenv>=1.0

@@ -1,0 +1,25 @@
+# Secrets / config
+.env
+.env.local
+*.key
+service-account*.json
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.ruff_cache/
+.pytest_cache/
+
+# Data artifacts (raw pulls stay out of git; keep results committed)
+data/raw/
+data/*.json
+data/*.csv
+!data/reference/**
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
