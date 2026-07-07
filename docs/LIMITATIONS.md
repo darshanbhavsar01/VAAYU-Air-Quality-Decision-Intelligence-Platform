@@ -43,6 +43,33 @@ its improvement path. Never hide a weak number; contextualise it here.
   still benefits from the shared global model (CLAUDE.md §6.2) but is shown
   as weaker, honestly.
 
+## Model — Phase 2 findings (be upfront about these)
+- **Training target is CAMS-modelled, not CPCB-measured.** CPCB has no
+  historical API, so the 24h-breach models train on CAMS (ECMWF) reanalysis at
+  station locations. It is in a separate table (`aqi_cams`) with a source label,
+  never mixed with CPCB (`raw_aqi`). We cross-validate CAMS vs live CPCB as real
+  data accrues, and will retrain on CPCB once enough history exists.
+- **"Breach" = NAAQS 24h limit (60 µg/m³), not CPCB Poor (90).** At 90, clean
+  southern cities (Bengaluru, Chennai) have ~zero events *genuinely* — so a 90
+  target is degenerate there. 60 is India's legal safe limit and the pitch's
+  literal "safe limit"; it is non-degenerate for every city. This is documented,
+  not tuned to flatter (a commoner target makes persistence harder to beat).
+- **Overall breach AUC-PR barely beats persistence (0.993 vs 0.991)** because
+  always-breaching Delhi (99.5% positive) dominates the aggregate. We say this
+  plainly. The model's real, honest value shows in three places, all reported in
+  `docs/EVALUATION.md`: (a) **onset recall 0.81 vs persistence 0.00** on
+  currently-safe hours that breach within 24h — the actionable advance-warning
+  case; (b) **regressor MAE 25.2 vs 34.7 µg/m³**, better in every city; (c)
+  Kolkata (the seasonal-swing city) AUC-PR +0.06 over persistence.
+- **Some cities/metrics under-perform persistence** (Hyderabad, Bengaluru breach
+  AUC-PR) — shown in the per-city table, not hidden.
+- **Clean cities have no TEST-season breaches** (Chennai/Mumbai/Pune = 0% in the
+  monsoon test window) → their breach AUC is n/a. That is the season's truth; the
+  regressor still gives them an accurate hotspot map.
+- **Weather is per-city-centroid** (Phase 1 simplification); station-level weather
+  and OSM static features (road density/land-use) are not yet added — an
+  improvement path, not a claim.
+
 ## Attribution
 - **Heuristic, not source apportionment.** Attribution maps model feature
   importance to human-readable causes via rules (stagnation / traffic /

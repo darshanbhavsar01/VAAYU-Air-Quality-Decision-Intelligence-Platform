@@ -38,4 +38,10 @@ _(append one row per training/prediction query: date · query file · bytes bill
 
 | Date | Query | Bytes | Est. ₹ |
 |---|---|---|---|
-| — | — | — | — |
+| 2026-07-08 | features.sql (feature table build) | 91 MB | 0 (free tier) |
+| 2026-07-08 | spike_classifier.sql (BOOSTED_TREE train) dry-run | 274 MB | 0 (free tier) |
+| 2026-07-08 | pm25_regressor.sql (BOOSTED_TREE train) dry-run | 274 MB | 0 (free tier) |
+| 2026-07-08 | spike_classifier train (ACTUAL billed — boosting scans data ×iters) | 21.4 GB | 0 (2.1% of 1TB/mo free) |
+| 2026-07-08 | pm25_regressor train (ACTUAL billed) | 15.0 GB | 0 (1.5% of 1TB/mo free) |
+
+**BQML note:** boosted-tree training bills far more than the single-scan dry-run (iterations re-scan). ~36 GB for both models this phase — still comfortably free. Retrain sparingly (once per phase) to preserve the 1TB/month headroom.

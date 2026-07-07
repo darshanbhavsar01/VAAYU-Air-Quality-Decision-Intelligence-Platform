@@ -1,0 +1,230 @@
+{
+  "generated": "2026-07-07T20:30:55.270751+00:00",
+  "threshold": 0.35,
+  "target": "breach = next-24h max PM2.5 exceeds NAAQS 24h limit (60 ug/m3)",
+  "classifier": {
+    "overall": {
+      "n": 143880,
+      "positive_rate": 0.45579649708090075,
+      "model": {
+        "auc_pr": 0.9932122404136545,
+        "roc_auc": 0.9931046462511349,
+        "recall": 0.9713632204940531,
+        "precision": 0.9210149642160051,
+        "f1": 0.9455193142602694
+      },
+      "persistence": {
+        "auc_pr": 0.9911471082478823,
+        "roc_auc": 0.990428037548438,
+        "recall": 0.8490850869167429,
+        "precision": 0.9971348244184589,
+        "f1": 0.9171738468000297
+      },
+      "auc_pr_lift_vs_persistence": 0.002065132165772199
+    },
+    "per_city": {
+      "bengaluru": {
+        "n": 13200,
+        "positive_rate": 0.05196969696969697,
+        "model": {
+          "auc_pr": 0.2606026958746602,
+          "roc_auc": 0.8217746561169276,
+          "recall": 0.4518950437317784,
+          "precision": 0.37897310513447435,
+          "f1": 0.4122340425531915
+        },
+        "persistence": {
+          "auc_pr": 0.2669330856894812,
+          "roc_auc": 0.818585225363919,
+          "recall": 0.06997084548104957,
+          "precision": 0.6486486486486487,
+          "f1": 0.12631578947368421
+        },
+        "auc_pr_lift_vs_persistence": -0.006330389814821036
+      },
+      "chennai": {
+        "n": 9240,
+        "positive_rate": 0.0,
+        "note": "single-class in this slice; AUC-PR/ROC undefined",
+        "model": {
+          "recall": 0.0,
+          "precision": 0.0
+        }
+      },
+      "delhi": {
+        "n": 59400,
+        "positive_rate": 0.9945454545454545,
+        "model": {
+          "auc_pr": 0.9997940335347462,
+          "roc_auc": 0.9635469564628614,
+          "recall": 1.0,
+          "precision": 0.9945454545454545,
+          "f1": 0.9972652689152234
+        },
+        "persistence": {
+          "auc_pr": 0.9998781596746331,
+          "roc_auc": 0.97860101112691,
+          "recall": 0.918359401448981,
+          "precision": 0.9995025792188651,
+          "f1": 0.9572144394650481
+        },
+        "auc_pr_lift_vs_persistence": -8.412613988695306e-05
+      },
+      "hyderabad": {
+        "n": 17160,
+        "positive_rate": 0.10536130536130536,
+        "model": {
+          "auc_pr": 0.5387524487190597,
+          "roc_auc": 0.8674833775369268,
+          "recall": 0.6537610619469026,
+          "precision": 0.321720195971693,
+          "f1": 0.43122947829259395
+        },
+        "persistence": {
+          "auc_pr": 0.5492709346996818,
+          "roc_auc": 0.8345005709670874,
+          "recall": 0.2051991150442478,
+          "precision": 0.9070904645476773,
+          "f1": 0.33468651330626975
+        },
+        "auc_pr_lift_vs_persistence": -0.010518485980622105
+      },
+      "kolkata": {
+        "n": 9240,
+        "positive_rate": 0.43398268398268397,
+        "model": {
+          "auc_pr": 0.8256766952954564,
+          "roc_auc": 0.8516708706245859,
+          "recall": 0.7815461346633417,
+          "precision": 0.6811562703760052,
+          "f1": 0.727906166531181
+        },
+        "persistence": {
+          "auc_pr": 0.7654349160061383,
+          "roc_auc": 0.8045876227213993,
+          "recall": 0.25211970074812967,
+          "precision": 0.9361111111111111,
+          "f1": 0.39724950884086446
+        },
+        "auc_pr_lift_vs_persistence": 0.060241779289318065
+      },
+      "mumbai": {
+        "n": 30360,
+        "positive_rate": 0.0,
+        "note": "single-class in this slice; AUC-PR/ROC undefined",
+        "model": {
+          "recall": 0.0,
+          "precision": 0.0
+        }
+      },
+      "pune": {
+        "n": 5280,
+        "positive_rate": 0.0,
+        "note": "single-class in this slice; AUC-PR/ROC undefined",
+        "model": {
+          "recall": 0.0,
+          "precision": 0.0
+        }
+      }
+    },
+    "onset_slice": {
+      "n_currently_safe": 88037,
+      "n_will_breach": 9897,
+      "persistence_recall": 0.0,
+      "model_recall": 0.8102455289481661,
+      "model_precision": 0.6018462924046832
+    }
+  },
+  "regressor": {
+    "overall": {
+      "n": 143880,
+      "model": {
+        "mae": 25.190948662702194,
+        "rmse": 51.58329889642727
+      },
+      "persistence": {
+        "mae": 34.651665276619404,
+        "rmse": 65.10195009393195
+      }
+    },
+    "per_city": {
+      "bengaluru": {
+        "n": 13200,
+        "model": {
+          "mae": 6.5040444732145835,
+          "rmse": 9.335453168428954
+        },
+        "persistence": {
+          "mae": 10.802272727272728,
+          "rmse": 15.216193527112669
+        }
+      },
+      "chennai": {
+        "n": 9240,
+        "model": {
+          "mae": 4.880151988706547,
+          "rmse": 6.305395615278256
+        },
+        "persistence": {
+          "mae": 7.256612554112555,
+          "rmse": 9.249061552957123
+        }
+      },
+      "delhi": {
+        "n": 59400,
+        "model": {
+          "mae": 50.632614296922775,
+          "rmse": 79.08911469916724
+        },
+        "persistence": {
+          "mae": 68.87801683501684,
+          "rmse": 99.42228259684886
+        }
+      },
+      "hyderabad": {
+        "n": 17160,
+        "model": {
+          "mae": 10.150176532507498,
+          "rmse": 13.14264372127688
+        },
+        "persistence": {
+          "mae": 14.7993006993007,
+          "rmse": 19.393567650137665
+        }
+      },
+      "kolkata": {
+        "n": 9240,
+        "model": {
+          "mae": 16.30889932450794,
+          "rmse": 24.53221310745398
+        },
+        "persistence": {
+          "mae": 22.945324675324674,
+          "rmse": 32.97059463202947
+        }
+      },
+      "mumbai": {
+        "n": 30360,
+        "model": {
+          "mae": 4.2630308662070275,
+          "rmse": 5.436153358350246
+        },
+        "persistence": {
+          "mae": 6.231564558629776,
+          "rmse": 8.19675690631918
+        }
+      },
+      "pune": {
+        "n": 5280,
+        "model": {
+          "mae": 5.99498802575198,
+          "rmse": 8.130993019477062
+        },
+        "persistence": {
+          "mae": 5.591893939393939,
+          "rmse": 7.016197169925651
+        }
+      }
+    }
+  }
+}
