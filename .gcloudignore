@@ -1,0 +1,16 @@
+# Controls what `gcloud builds submit` uploads. Keep secrets & cruft out.
+.git
+.gitignore
+.env
+.env.*
+!.env.example
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.ruff_cache/
+.pytest_cache/
+data/raw/
+data/*.json
+data/*.csv
+scratchpad/
