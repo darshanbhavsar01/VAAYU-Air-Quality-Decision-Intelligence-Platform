@@ -26,8 +26,9 @@ except (AttributeError, ValueError):
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent / "ingest"))
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import bq  # noqa: E402
+import common  # noqa: E402
 from cities import get_city  # noqa: E402
-from common import FLASH_MODEL, PRO_MODEL, generate  # noqa: E402
+from common import PRO_MODEL, generate  # noqa: E402
 
 
 def _heuristic_driver(wind: float | None, rh: float | None, cat: str) -> str:
@@ -64,7 +65,9 @@ def build_context(city_id: str, city_name: str) -> dict | None:
     }
 
 
-def generate_report(city_id: str) -> str:
+def generate_report(city_id: str) -> tuple[str, str]:
+    """Returns (html, model_used) — model_used is the actual model+account that
+    served the call (post-cascade), not just the preferred PRO_MODEL constant."""
     city = get_city(city_id)
     ctx = build_context(city_id, city.name)
     if ctx is None:
@@ -86,14 +89,12 @@ def generate_report(city_id: str) -> str:
         f"drivers (e.g. construction dust control, traffic management at named hotspots)\n"
         f"Ground every number in the data. Be specific and non-generic."
     )
-    model = PRO_MODEL
-    try:
-        rep = generate("vaani", "report", prompt, model=PRO_MODEL, city_id=city_id, as_json=True)
-    except Exception as e:  # noqa: BLE001 — Pro quota can be exhausted; fall back to Flash
-        print(f"  Pro failed ({type(e).__name__}); falling back to Flash")
-        model = FLASH_MODEL
-        rep = generate("vaani", "report", prompt, model=FLASH_MODEL, city_id=city_id, as_json=True)
-    return _render_html(city.name, ctx, rep, model)
+    # tier="pro" cascades PRO_CASCADE then FLASH_CASCADE, across all configured
+    # accounts (primary -> fallback1 -> fallback2) before giving up — see
+    # agents/common.py. No manual try/except needed here anymore.
+    rep = generate("vaani", "report", prompt, tier="pro", city_id=city_id, as_json=True)
+    model_used = f"{common.LAST_USED[1]} ({common.LAST_USED[0]})" if common.LAST_USED else PRO_MODEL
+    return _render_html(city.name, ctx, rep, model_used), model_used
 
 
 def _render_html(city_name: str, ctx: dict, rep: dict, model: str) -> str:
@@ -133,10 +134,10 @@ def run(city_ids: list[str]) -> int:
     rows = []
     for cid in city_ids:
         try:
-            html_doc = generate_report(cid)
+            html_doc, model_used = generate_report(cid)
             rows.append({"city_id": cid, "generated_at": now, "html": html_doc,
-                         "model": PRO_MODEL})
-            print(f"  {cid}: report generated ({len(html_doc)} chars)")
+                         "model": model_used})
+            print(f"  {cid}: report generated ({len(html_doc)} chars) via {model_used}")
         except Exception as ex:  # noqa: BLE001
             print(f"  {cid}: FAILED {type(ex).__name__}: {str(ex)[:80]}")
     if rows:

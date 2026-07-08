@@ -28,7 +28,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent / "ingest")
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import bq  # noqa: E402
 from cities import load_cities  # noqa: E402
-from common import FLASH_MODEL, generate  # noqa: E402
+import common  # noqa: E402
+from common import generate  # noqa: E402
 
 LANG_NAMES = {
     "en": "English", "hi": "Hindi (हिन्दी, Devanagari script)",
@@ -137,14 +138,15 @@ def run(skip_existing: bool = True) -> int:
             try:
                 time.sleep(1.0)  # stay under free-tier requests-per-minute
                 adv = make_advisory(city.city_id, city.name, ctx, lang)
+                model_used = f"{common.LAST_USED[1]} ({common.LAST_USED[0]})" if common.LAST_USED else "unknown"
                 rows.append({
                     "city_id": city.city_id, "lang": lang, "as_of": ctx["as_of"],
                     "category": ctx["predicted_category"],
                     "headline": adv.get("headline", ""), "body": adv.get("body", ""),
                     "health_actions": adv.get("health_actions", ""),
-                    "model": FLASH_MODEL, "generated_at": now,
+                    "model": model_used, "generated_at": now,
                 })
-                print(f"  {city.name} [{lang}]: {adv.get('headline','')[:50]}")
+                print(f"  {city.name} [{lang}] via {model_used}: {adv.get('headline','')[:50]}")
             except Exception as e:  # noqa: BLE001
                 print(f"  {city.name} [{lang}]: FAILED {type(e).__name__}: {e}")
     if not rows:

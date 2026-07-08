@@ -21,10 +21,13 @@ CREATE TABLE IF NOT EXISTS `{project}.{dataset}._staging_advisories`
 LIKE `{project}.{dataset}.advisories`;
 
 -- Audit + call-volume log for every Gemini call (§7 — track free-tier usage).
+-- key_name records WHICH AI Studio account served the call (primary/fallback1/
+-- fallback2) — lets us see the model+account fallback cascade in action.
 CREATE TABLE IF NOT EXISTS `{project}.{dataset}.agent_logs` (
   agent          STRING NOT NULL,   -- sentinel | oracle | vaani
   task           STRING,            -- advisory | ask | report
   model          STRING,
+  key_name       STRING,            -- primary | fallback1 | fallback2
   city_id        STRING,
   lang           STRING,
   prompt_chars   INT64,
@@ -35,7 +38,7 @@ CREATE TABLE IF NOT EXISTS `{project}.{dataset}.agent_logs` (
   ts             TIMESTAMP NOT NULL
 )
 PARTITION BY DATE(ts)
-OPTIONS (description = 'Audit log of all Gemini/agent calls (grounding + free-tier volume tracking)');
+OPTIONS (description = 'Audit log of all Gemini/agent calls (grounding + free-tier volume + fallback-chain tracking)');
 
 -- vaani weekly MP hotspot report (Gemini Pro), rendered HTML per city.
 CREATE TABLE IF NOT EXISTS `{project}.{dataset}.reports` (
