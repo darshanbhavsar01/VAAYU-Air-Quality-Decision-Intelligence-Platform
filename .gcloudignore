@@ -14,3 +14,8 @@ data/raw/
 data/*.json
 data/*.csv
 scratchpad/
+
+# Office lock/temp + binary deck (not needed in image/build)
+~$*
+*.pptx
+docs/
