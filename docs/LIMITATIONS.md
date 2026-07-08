@@ -43,6 +43,18 @@ its improvement path. Never hide a weak number; contextualise it here.
   still benefits from the shared global model (CLAUDE.md §6.2) but is shown
   as weaker, honestly.
 
+## Deployment finding — data.gov.in blocks datacenter IPs
+- **CPCB live ingest fails from Cloud Run** (`RemoteDisconnected` — data.gov.in
+  drops connections from GCP egress IPs, even with browser UA + retries). The
+  hourly Cloud Run Job is built to tolerate this: the CPCB step is non-fatal, so
+  the forecast surfaces (CAMS + weather driven — both reachable from Cloud Run)
+  still refresh every hour. Consequence: the **live CPCB "current" readings and
+  station-health freshness only update when ingest runs from a non-datacenter IP**
+  (e.g. locally, or via a proxy/NAT). The forecast product — the core demo — is
+  fully live in the cloud; the CPCB freshness layer is not. Fix paths: egress
+  proxy / static-IP NAT, or a small non-GCP scheduled runner for CPCB only.
+  This does not affect the demo (surfaces are CAMS-driven and pre-cached per §3.5).
+
 ## Model — Phase 2 findings (be upfront about these)
 - **Training target is CAMS-modelled, not CPCB-measured.** CPCB has no
   historical API, so the 24h-breach models train on CAMS (ECMWF) reanalysis at
