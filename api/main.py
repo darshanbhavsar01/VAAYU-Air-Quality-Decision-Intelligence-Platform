@@ -20,6 +20,7 @@ from typing import Any
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 
 # Reuse the shared BigQuery helper (single image contains ingest/ + api/).
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "ingest"))
@@ -177,3 +178,10 @@ def forecast(city: str = Query(...)) -> dict:
         "max_predicted_pm25": summ["max_pred"], "avg_breach_prob": summ["avg_breach_prob"],
         "worst_stations": worst,
     }
+
+
+# Serve the single-page frontend from the same container (one origin, one deploy).
+# Mounted last so it never shadows the API routes above.
+_WEB = Path(__file__).resolve().parent.parent / "web"
+if _WEB.exists():
+    app.mount("/", StaticFiles(directory=str(_WEB), html=True), name="web")
