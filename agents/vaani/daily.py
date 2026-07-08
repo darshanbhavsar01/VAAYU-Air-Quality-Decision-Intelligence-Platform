@@ -18,20 +18,22 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import advisory  # noqa: E402
 import report  # noqa: E402
-
-# Report cities: most decision-relevant (Delhi breaches; Bengaluru is primary demo).
-REPORT_CITIES = ["delhi", "bengaluru"]
+from cities import load_cities  # noqa: E402
 
 
 def main() -> None:
+    # Every onboarded constituency gets its own weekly MP report — the pitch is
+    # "this lands in your office every Monday, for your constituency", for any city.
+    report_cities = [c.city_id for c in load_cities()]
+
     print("[vaani] generating advisories (upsert, skip-existing)...", flush=True)
     try:
         advisory.run(skip_existing=True)
     except Exception as e:  # noqa: BLE001
         print(f"[vaani] advisories step error (non-fatal): {type(e).__name__}: {e}", flush=True)
-    print("[vaani] generating weekly reports...", flush=True)
+    print(f"[vaani] generating weekly reports for {len(report_cities)} cities...", flush=True)
     try:
-        report.run(REPORT_CITIES)
+        report.run(report_cities)
     except Exception as e:  # noqa: BLE001
         print(f"[vaani] reports step error (non-fatal): {type(e).__name__}: {e}", flush=True)
     print("[vaani] daily done.", flush=True)
