@@ -18,13 +18,19 @@ written estimate here before the service is used.
 ### Gemini (AI Studio, free tier — NOT Vertex, off the GCP bill)
 | Item | Model | Volume | Cost |
 |---|---|---|---|
-| vaani advisories | gemini-2.5-flash-lite | ~20 calls/generation (7 cities × EN+HI+regional) | ₹0 (free tier) |
-| oracle /ask | gemini-2.5-flash-lite | on demand | ₹0 |
-| vaani weekly report | gemini-2.5-pro (→flash fallback) | ~1/city, run rarely | ₹0 |
+| vaani advisories | flash cascade (see below) | ~20 calls/generation (7 cities × EN+HI+regional) | ₹0 (free tier) |
+| oracle /ask | flash cascade | on demand | ₹0 |
+| vaani weekly report | pro cascade → flash cascade | ~1/city, run rarely | ₹0 |
 
 **Quota realities (learned the hard way, logged so we don't re-trip them):**
-- `gemini-2.5-flash` free tier is **20 requests/DAY** — one advisory generation exhausts it. Switched default to **gemini-2.5-flash-lite** (far larger free daily quota).
-- Advisory/report generation runs on a **daily** cadence, NOT in the hourly pipeline (hourly × 20 calls would blow any free daily quota). Every call is logged to `agent_logs` for volume tracking (§7).
+- Every Gemini model has its own small **per-account, per-day** free quota (`gemini-2.5-flash` is just 20 requests/day). One advisory generation run (~20 calls) can exhaust a single model on a single account.
+- **Fix: a model+account fallback chain** (`agents/common.py`), entirely free:
+  1. **Model cascade** (same AI Studio account): `gemini-2.5-flash` → `2.5-flash-lite` → `2.0-flash` → `2.0-flash-lite` → `3-flash-preview` → `3.1-flash-lite` → `3.5-flash` → `flash-latest`. Each is a separate quota pool, so cycling through them multiplies the effective daily capacity on one account for free.
+  2. **Account cascade**: once every model above is exhausted on the current AI Studio account, move to the next configured account (`GEMINI_API_KEY_FALLBACK1`, `FALLBACK2` — 2 additional free accounts, each with its own full quota pool). 3 accounts × 8 models ≈ 24 independent free quota pools.
+  3. Pro tasks (weekly report) cascade Pro variants first, then fall through to the same flash cascade rather than failing outright.
+  - Known-exhausted (account, model) pairs are skipped for the rest of the process (no wasted retries); `agent_logs.key_name` records exactly which account/model served every call, for audit.
+  - **Verified**: advisory coverage was stuck at 5/20 for a full day (primary account's flash models all 429/503); the fallback chain completed all 20 in one run by cascading to `gemini-3-flash-preview` on the primary account — no fallback account even needed that time. Failover to `fallback1` was also unit-tested directly (simulated full primary exhaustion → correctly routed to fallback1).
+- Advisory/report generation runs on a **daily** cadence, NOT in the hourly pipeline (hourly × 20 calls would blow any free daily quota even with the cascade).
 - Advisories use **upsert** (never truncate), so partial runs under a flaky/rate-limited tier accumulate coverage instead of wiping good rows.
 
 **Current total: ₹0 / ₹500.**

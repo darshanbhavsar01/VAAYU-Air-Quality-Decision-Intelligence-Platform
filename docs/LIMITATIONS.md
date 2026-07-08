@@ -43,21 +43,36 @@ its improvement path. Never hide a weak number; contextualise it here.
   still benefits from the shared global model (CLAUDE.md §6.2) but is shown
   as weaker, honestly.
 
-## Agents — Gemini free-tier quota (Phase 4)
-- **Gemini free tier is tightly rate-limited.** `gemini-2.5-flash` is only
-  **20 requests/day**; one advisory generation (7 cities × EN+HI+regional ≈ 20
-  calls) exhausts it. Switched to `gemini-2.5-flash-lite` (larger free daily
-  quota) but that too can hit its daily cap after repeated runs, and the API
-  intermittently returns 503 (overload). Design consequences (all shipped):
-  advisories **upsert + skip-existing** so partial runs accumulate coverage
-  instead of wiping; a **daily** (not hourly) `vaani-daily` job regenerates them
-  within quota; every call is logged to `agent_logs` for volume tracking.
-- **Multilingual advisory generation is proven** (English, Hindi, Kannada,
-  Bengali, Tamil, Telugu, Marathi all generated correctly and grounded in the
-  forecast JSON). On a fresh daily quota window the table fills to full coverage
-  automatically; a demo snapshot is cached in BigQuery either way (§3.5).
-- **Weekly MP report** uses Gemini Pro (→Flash fallback); generated on the daily
-  cadence for the highest-signal cities to stay within quota.
+## Agents — Gemini free-tier quota (Phase 4) — RESOLVED via fallback chain
+- **Gemini free tier is tightly rate-limited per model, per account.**
+  `gemini-2.5-flash` is only **20 requests/day**; one advisory generation
+  (7 cities × EN+HI+regional ≈ 20 calls) can exhaust a single model on a single
+  account, and the API intermittently returns 503 (overload) even within quota.
+- **Fix: a model+account fallback chain** (`agents/common.py`, still ₹0 —
+  everything is free-tier AI Studio, no paid upgrade). On any 429/hard-error,
+  `generate()` cascades through 8 models on the current account
+  (`gemini-2.5-flash` → `2.5-flash-lite` → `2.0-flash` → `2.0-flash-lite` →
+  `3-flash-preview` → `3.1-flash-lite` → `3.5-flash` → `flash-latest`) before
+  moving to the next of 2 additional fallback AI Studio accounts — effectively
+  ~24 independent free quota pools. Pro tasks (weekly report) cascade Pro
+  variants, then fall through to the same flash cascade rather than failing.
+  Known-exhausted (account, model) combos are skipped for the rest of the
+  process; `agent_logs.key_name` records exactly which account/model served
+  every call, for audit.
+- **Verified working**: advisory coverage was stuck at 5/20 for a full day
+  under the single-model approach; after adding the cascade, one run completed
+  all 20 (the chain reached `gemini-3-flash-preview` on the primary account —
+  no fallback account was even needed that time). Account failover was also
+  directly unit-tested (simulated full primary exhaustion → correctly routed
+  to `fallback1`).
+- **Multilingual advisory generation is proven end-to-end**: all 20 advisories
+  (7 cities × EN + HI + regional — Kannada/Marathi/Tamil/Bengali/Telugu) are
+  live in BigQuery, correctly grounded in the forecast JSON, zero empty rows.
+- **Weekly MP report** generates cleanly via the Pro→Flash cascade; the
+  `reports.model` column and the HTML caveat footer both record the actual
+  model+account that served the request (not just the preferred default).
+- Advisory/report generation still runs on a **daily** (not hourly) cadence to
+  respect quota even with the larger effective pool from the cascade.
 
 ## Deployment finding — data.gov.in blocks datacenter IPs
 - **CPCB live ingest fails from Cloud Run** (`RemoteDisconnected` — data.gov.in
