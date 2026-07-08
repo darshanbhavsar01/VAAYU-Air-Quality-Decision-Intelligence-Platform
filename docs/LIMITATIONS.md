@@ -43,6 +43,22 @@ its improvement path. Never hide a weak number; contextualise it here.
   still benefits from the shared global model (CLAUDE.md §6.2) but is shown
   as weaker, honestly.
 
+## Agents — Gemini free-tier quota (Phase 4)
+- **Gemini free tier is tightly rate-limited.** `gemini-2.5-flash` is only
+  **20 requests/day**; one advisory generation (7 cities × EN+HI+regional ≈ 20
+  calls) exhausts it. Switched to `gemini-2.5-flash-lite` (larger free daily
+  quota) but that too can hit its daily cap after repeated runs, and the API
+  intermittently returns 503 (overload). Design consequences (all shipped):
+  advisories **upsert + skip-existing** so partial runs accumulate coverage
+  instead of wiping; a **daily** (not hourly) `vaani-daily` job regenerates them
+  within quota; every call is logged to `agent_logs` for volume tracking.
+- **Multilingual advisory generation is proven** (English, Hindi, Kannada,
+  Bengali, Tamil, Telugu, Marathi all generated correctly and grounded in the
+  forecast JSON). On a fresh daily quota window the table fills to full coverage
+  automatically; a demo snapshot is cached in BigQuery either way (§3.5).
+- **Weekly MP report** uses Gemini Pro (→Flash fallback); generated on the daily
+  cadence for the highest-signal cities to stay within quota.
+
 ## Deployment finding — data.gov.in blocks datacenter IPs
 - **CPCB live ingest fails from Cloud Run** (`RemoteDisconnected` — data.gov.in
   drops connections from GCP egress IPs, even with browser UA + retries). The
