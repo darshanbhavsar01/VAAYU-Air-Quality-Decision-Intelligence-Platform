@@ -111,15 +111,29 @@ def make_advisory(city_id: str, city_name: str, ctx: dict, lang: str) -> dict:
     return out
 
 
-def run() -> int:
+def _existing() -> set[tuple[str, str]]:
+    """(city_id, lang) advisories already present with non-empty content."""
+    sql = f"SELECT city_id, lang FROM `{bq.table_fqn('advisories')}` WHERE headline != '' AND body != ''"
+    try:
+        return {(r.city_id, r.lang) for r in bq.client().query(sql, location=bq.BQ_LOCATION).result()}
+    except Exception:  # noqa: BLE001
+        return set()
+
+
+def run(skip_existing: bool = True) -> int:
     now = pd.Timestamp(datetime.now(timezone.utc))
+    done = _existing() if skip_existing else set()
     rows = []
     for city in load_cities():
-        ctx = forecast_context(city.city_id, city.name)
-        if ctx is None:
-            print(f"  {city.name}: no forecast yet, skipping")
-            continue
+        ctx = None
         for lang in advisory_langs(city):
+            if (city.city_id, lang) in done:
+                continue
+            if ctx is None:  # fetch forecast lazily, only when a lang is needed
+                ctx = forecast_context(city.city_id, city.name)
+                if ctx is None:
+                    print(f"  {city.name}: no forecast yet, skipping")
+                    break
             try:
                 time.sleep(1.0)  # stay under free-tier requests-per-minute
                 adv = make_advisory(city.city_id, city.name, ctx, lang)

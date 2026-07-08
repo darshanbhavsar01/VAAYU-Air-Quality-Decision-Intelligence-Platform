@@ -15,6 +15,18 @@ written estimate here before the service is used.
 
 **Hourly pipeline query cost:** each run rebuilds the feature table (~91 MB scan) + tiny ML.PREDICT + interpolate ≈ ~0.1 GB/run → ~70 GB/month, ~7% of the 1TB free tier. Optimisation path if needed: refresh only recent partitions instead of the full-year feature rebuild.
 
+### Gemini (AI Studio, free tier — NOT Vertex, off the GCP bill)
+| Item | Model | Volume | Cost |
+|---|---|---|---|
+| vaani advisories | gemini-2.5-flash-lite | ~20 calls/generation (7 cities × EN+HI+regional) | ₹0 (free tier) |
+| oracle /ask | gemini-2.5-flash-lite | on demand | ₹0 |
+| vaani weekly report | gemini-2.5-pro (→flash fallback) | ~1/city, run rarely | ₹0 |
+
+**Quota realities (learned the hard way, logged so we don't re-trip them):**
+- `gemini-2.5-flash` free tier is **20 requests/DAY** — one advisory generation exhausts it. Switched default to **gemini-2.5-flash-lite** (far larger free daily quota).
+- Advisory/report generation runs on a **daily** cadence, NOT in the hourly pipeline (hourly × 20 calls would blow any free daily quota). Every call is logged to `agent_logs` for volume tracking (§7).
+- Advisories use **upsert** (never truncate), so partial runs under a flaky/rate-limited tier accumulate coverage instead of wiping good rows.
+
 **Current total: ₹0 / ₹500.**
 
 ## Budget alerts (action item — do on day 1 before GCP work)
