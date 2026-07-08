@@ -48,6 +48,17 @@
   <aside>
     <div class="card" id="summary"><h2>City outlook</h2><div class="muted">Select a city…</div></div>
     <div class="card" id="detail"><h2>Click a cell or station</h2><div class="muted">Details appear here.</div></div>
+    <div class="card" id="advisory"><h2>Citizen advisory</h2>
+      <select id="lang" style="margin-bottom:8px"></select>
+      <div id="advisory-body" class="muted">—</div>
+    </div>
+    <div class="card" id="ask"><h2>Ask VAAYU</h2>
+      <input id="ask-input" placeholder="e.g. which cities breach tomorrow?"
+        style="width:100%;background:#21262d;color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:7px;font-size:13px"/>
+      <button id="ask-btn" style="margin-top:6px;background:#1f6feb;border:0;color:#fff;border-radius:6px;padding:6px 12px;cursor:pointer">Ask</button>
+      <div id="ask-answer" class="muted" style="margin-top:8px"></div>
+      <div style="margin-top:8px"><a id="report-link" href="#" target="_blank">📄 Weekly MP report</a></div>
+    </div>
     <div class="card" id="health"><h2>Station health</h2><div class="muted">—</div></div>
     <div class="card legend"><h2>PM2.5 category (CPCB)</h2><div id="legend"></div>
       <div class="muted" style="margin-top:8px">Faded cells = low confidence (far from any station — interpolated, not measured).</div>
@@ -87,8 +98,44 @@ async function loadCities(){
 async function selectCity(city){
   curCity=city; const c=window._cities[city];
   map.fitBounds([[c.lat_min,c.lon_min],[c.lat_max,c.lon_max]]);
-  await Promise.all([drawSurface(), drawStations(), loadSummary(), loadHealth()]);
+  document.getElementById('report-link').href = `${API}/reports/weekly?city=${city}`;
+  await Promise.all([drawSurface(), drawStations(), loadSummary(), loadHealth(), loadAdvisories()]);
 }
+
+const LANG_NAMES = {en:'English', hi:'हिन्दी', kn:'ಕನ್ನಡ', mr:'मराठी', ta:'தமிழ்', bn:'বাংলা', te:'తెలుగు'};
+let _advisories = {};
+async function loadAdvisories(){
+  const sel=document.getElementById('lang'), body=document.getElementById('advisory-body');
+  try{
+    const {advisories}=await jget(`/advisories?city=${curCity}`);
+    _advisories=Object.fromEntries(advisories.map(a=>[a.lang,a]));
+    const langs=advisories.map(a=>a.lang);
+    if(!langs.length){ body.innerHTML='<span class="muted">No advisory yet.</span>'; sel.innerHTML=''; return; }
+    sel.innerHTML=langs.map(l=>`<option value="${l}">${LANG_NAMES[l]||l}</option>`).join('');
+    sel.onchange=()=>renderAdvisory(sel.value);
+    renderAdvisory(langs.includes('en')?'en':langs[0]);
+    sel.value=langs.includes('en')?'en':langs[0];
+  }catch(e){ body.innerHTML='<span class="muted">No advisory yet.</span>'; }
+}
+function renderAdvisory(lang){
+  const a=_advisories[lang]; if(!a) return;
+  document.getElementById('advisory-body').innerHTML=
+    `<div style="font-weight:600;margin-bottom:4px">${a.headline||''}</div>
+     <div style="font-size:13px;margin-bottom:6px">${a.body||''}</div>
+     <div style="font-size:13px"><b>▸</b> ${a.health_actions||''}</div>`;
+}
+
+async function doAsk(){
+  const inp=document.getElementById('ask-input'), out=document.getElementById('ask-answer');
+  const q=inp.value.trim(); if(!q) return;
+  out.textContent='Thinking…';
+  try{
+    const r=await fetch(`${API}/ask`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:q})});
+    const d=await r.json(); out.textContent=d.answer||JSON.stringify(d);
+  }catch(e){ out.textContent='Error: '+e.message; }
+}
+document.getElementById('ask-btn').onclick=doAsk;
+document.getElementById('ask-input').addEventListener('keydown',e=>{if(e.key==='Enter')doAsk();});
 
 async function drawSurface(){
   gridLayer.clearLayers();

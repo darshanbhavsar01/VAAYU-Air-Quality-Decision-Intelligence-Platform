@@ -28,6 +28,7 @@ import sync_cities  # noqa: E402
 import weather_ingest  # noqa: E402
 
 ML = REPO / "ml"
+SENTINEL = REPO / "agents" / "sentinel" / "health.sql"
 
 
 def _step(label: str, fn, *, fatal: bool) -> bool:
@@ -61,7 +62,11 @@ def main() -> None:
     # Surface build (BigQuery SQL) — fatal; these produce what the API serves.
     _step("5/7 rebuild features", lambda: bq.run_sql_file(str(ML / "features.sql")), fatal=True)
     _step("6/7 station_forecast", lambda: bq.run_sql_file(str(ML / "station_forecast.sql")), fatal=True)
-    _step("7/7 interpolate grid", lambda: bq.run_sql_file(str(ML / "interpolate.sql")), fatal=True)
+    _step("7/8 interpolate grid", lambda: bq.run_sql_file(str(ML / "interpolate.sql")), fatal=True)
+    # sentinel station-health (rule-based SQL, free). vaani advisories/reports
+    # run on a separate daily cadence — 7 cities × langs × hourly would blow the
+    # Gemini free-tier daily quota (see docs/BUDGET.md).
+    _step("8/8 sentinel health", lambda: bq.run_sql_file(str(SENTINEL)), fatal=False)
     print(f"[pipeline] ALL DONE in {time.time()-t0:.0f}s", flush=True)
 
 

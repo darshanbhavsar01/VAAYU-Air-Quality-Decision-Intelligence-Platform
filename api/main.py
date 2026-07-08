@@ -22,10 +22,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 
-# Reuse the shared BigQuery helper (single image contains ingest/ + api/).
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "ingest"))
+# Reuse the shared BigQuery helper + agent code (single image contains all dirs).
+_ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(_ROOT / "ingest"))
+sys.path.insert(0, str(_ROOT / "agents"))
+sys.path.insert(0, str(_ROOT / "agents" / "oracle"))
 import bq  # noqa: E402
 from google.cloud import bigquery  # noqa: E402
+from pydantic import BaseModel  # noqa: E402
 
 app = FastAPI(title="VAAYU API", version="0.3.0",
               description="Ward-level air-quality decision intelligence")
@@ -133,27 +137,70 @@ def stations(city: str = Query(...)) -> JSONResponse:
 
 @app.get("/stations/health")
 def stations_health(city: str = Query(...)) -> dict:
-    """Feed freshness per station (sentinel-lite; full QA agent is Phase 4).
-    Stale = latest reading older than 3h."""
+    """sentinel agent output: per-station freshness + anomaly flags."""
     _require_city(city)
     sql = f"""
-    SELECT station_id, ANY_VALUE(station) station, MAX(ts) latest,
-      TIMESTAMP_DIFF(CURRENT_TIMESTAMP(), MAX(ts), MINUTE)/60.0 AS age_hours
-    FROM `{bq.table_fqn('raw_aqi')}` WHERE city_id=@city GROUP BY station_id
+    SELECT station_id, station, latest_ts, age_hours, stale, latest_pm25,
+           zscore, anomaly, note
+    FROM `{bq.table_fqn('station_health')}` WHERE city_id=@city
     ORDER BY age_hours DESC
     """
     rows = _query(sql, [_sp("city", city)], cache_key=f"health:{city}")
-    out = []
-    for r in rows:
-        age = r["age_hours"]
-        out.append({
-            "station_id": r["station_id"], "station": r["station"],
-            "latest": r["latest"].isoformat() if r["latest"] else None,
-            "age_hours": round(age, 1) if age is not None else None,
-            "stale": age is None or age > 3,
-        })
+    out = [{
+        "station_id": r["station_id"], "station": r["station"],
+        "latest": r["latest_ts"].isoformat() if r["latest_ts"] else None,
+        "age_hours": r["age_hours"], "stale": r["stale"],
+        "latest_pm25": r["latest_pm25"], "zscore": r["zscore"],
+        "anomaly": r["anomaly"], "note": r["note"],
+    } for r in rows]
     return {"city": city, "n_stations": len(out),
-            "n_stale": sum(1 for s in out if s["stale"]), "stations": out}
+            "n_stale": sum(1 for s in out if s["stale"]),
+            "n_anomaly": sum(1 for s in out if s["anomaly"]), "stations": out}
+
+
+@app.get("/advisories")
+def advisories(city: str = Query(...), lang: str | None = Query(None)) -> dict:
+    """vaani citizen advisories for a city (all languages, or one via ?lang=)."""
+    _require_city(city)
+    where = "city_id=@city" + (" AND lang=@lang" if lang else "")
+    params = [_sp("city", city)] + ([_sp("lang", lang)] if lang else [])
+    sql = f"""
+    SELECT lang, category, headline, body, health_actions, as_of, generated_at
+    FROM `{bq.table_fqn('advisories')}` WHERE {where} ORDER BY lang
+    """
+    rows = _query(sql, params, cache_key=f"adv:{city}:{lang}")
+    for r in rows:
+        for k in ("as_of", "generated_at"):
+            if r.get(k) is not None:
+                r[k] = r[k].isoformat()
+    return {"city": city, "advisories": rows}
+
+
+class AskBody(BaseModel):
+    question: str
+
+
+@app.post("/ask")
+def ask_endpoint(body: AskBody) -> dict:
+    """oracle agent: grounded NL Q&A over the current forecast snapshot."""
+    if not body.question.strip():
+        raise HTTPException(400, "question is required")
+    from ask import ask  # oracle.ask (lazy: only /ask needs Gemini)
+    return ask(body.question)
+
+
+@app.get("/reports/weekly")
+def weekly_report(city: str = Query(...)) -> JSONResponse:
+    """Latest weekly MP report (HTML) for a city, if generated."""
+    _require_city(city)
+    rows = _query(
+        f"SELECT html, generated_at FROM `{bq.table_fqn('reports')}` "
+        f"WHERE city_id=@city ORDER BY generated_at DESC LIMIT 1",
+        [_sp("city", city)], cache_key=f"report:{city}")
+    if not rows:
+        raise HTTPException(404, f"No weekly report generated yet for {city}.")
+    from fastapi.responses import HTMLResponse
+    return HTMLResponse(rows[0]["html"])
 
 
 @app.get("/forecast")
