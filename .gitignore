@@ -23,3 +23,9 @@ data/*.csv
 Thumbs.db
 .vscode/
 .idea/
+
+# docs kept local-only, not published to GitHub
+docs/
+
+# Office lock/temp files
+~$*
