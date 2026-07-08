@@ -10,6 +10,10 @@ written estimate here before the service is used.
 |---|---|---|---|---|
 | 2026-07-07 | Phase 0 data audit (data.gov.in + WAQI + Open-Meteo) | 0 | 0 | All free public APIs, no GCP billing |
 | 2026-07-08 | Phase 1 BigQuery: dataset+schema, CPCB ingest (735 rows), 91-day weather backfill (13k rows) | 0 | 0 | Load jobs are free; MERGE queries scan KBs, far inside 1TB/mo free tier. Storage ~few MB (<10GB free). |
+| 2026-07-08 | Phase 2 CAMS full-year backfill (947k rows) + 2 BQML trainings (~36GB billed) | 0 | 0 | ~1.5GB storage (<10GB free); training 3.6% of 1TB/mo query free tier |
+| 2026-07-08 | Phase 3 deploy: Cloud Build image, Cloud Run service (min-inst=0), 1 hourly Job, 1 Scheduler | 0 | 0 | Build 120min/day free; service no idle cost; job ~2min/hr within 360k GB-s free; scheduler first 3 free |
+
+**Hourly pipeline query cost:** each run rebuilds the feature table (~91 MB scan) + tiny ML.PREDICT + interpolate ≈ ~0.1 GB/run → ~70 GB/month, ~7% of the 1TB free tier. Optimisation path if needed: refresh only recent partitions instead of the full-year feature rebuild.
 
 **Current total: ₹0 / ₹500.**
 

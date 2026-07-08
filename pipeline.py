@@ -30,23 +30,38 @@ import weather_ingest  # noqa: E402
 ML = REPO / "ml"
 
 
-def _step(label: str, fn) -> None:
+def _step(label: str, fn, *, fatal: bool) -> bool:
+    """Run a step. Ingest steps are non-fatal (a flaky third-party feed must not
+    kill the whole hourly refresh — surfaces still rebuild from existing data,
+    and demo data is already cached in BigQuery per CLAUDE.md §3.5). Surface SQL
+    steps are fatal (a failure there is a real problem)."""
     t = time.time()
     print(f"[pipeline] {label} ...", flush=True)
-    fn()
-    print(f"[pipeline] {label} done in {time.time()-t:.0f}s", flush=True)
+    try:
+        fn()
+        print(f"[pipeline] {label} done in {time.time()-t:.0f}s", flush=True)
+        return True
+    except Exception as e:  # noqa: BLE001
+        msg = f"[pipeline] {label} FAILED: {type(e).__name__}: {e}"
+        if fatal:
+            print(msg, flush=True)
+            raise
+        print(msg + "  (non-fatal — continuing)", flush=True)
+        return False
 
 
 def main() -> None:
     t0 = time.time()
     bq.ensure_dataset()
-    _step("1/7 CPCB ingest", lambda: cpcb_ingest.run())
-    _step("2/7 weather forecast", lambda: weather_ingest.run_forecast())
-    _step("3/7 CAMS forecast", lambda: cams_ingest.run_forecast())
-    _step("4/7 sync cities", lambda: sync_cities.run())
-    _step("5/7 rebuild features", lambda: bq.run_sql_file(str(ML / "features.sql")))
-    _step("6/7 station_forecast", lambda: bq.run_sql_file(str(ML / "station_forecast.sql")))
-    _step("7/7 interpolate grid", lambda: bq.run_sql_file(str(ML / "interpolate.sql")))
+    # Ingest steps (network, third-party) — non-fatal.
+    _step("1/7 CPCB ingest", lambda: cpcb_ingest.run(), fatal=False)
+    _step("2/7 weather forecast", lambda: weather_ingest.run_forecast(), fatal=False)
+    _step("3/7 CAMS forecast", lambda: cams_ingest.run_forecast(), fatal=False)
+    _step("4/7 sync cities", lambda: sync_cities.run(), fatal=False)
+    # Surface build (BigQuery SQL) — fatal; these produce what the API serves.
+    _step("5/7 rebuild features", lambda: bq.run_sql_file(str(ML / "features.sql")), fatal=True)
+    _step("6/7 station_forecast", lambda: bq.run_sql_file(str(ML / "station_forecast.sql")), fatal=True)
+    _step("7/7 interpolate grid", lambda: bq.run_sql_file(str(ML / "interpolate.sql")), fatal=True)
     print(f"[pipeline] ALL DONE in {time.time()-t0:.0f}s", flush=True)
 
 

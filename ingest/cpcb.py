@@ -13,11 +13,21 @@ from datetime import datetime, timedelta, timezone
 from typing import Any
 
 import requests
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 
 # CPCB data.gov.in timestamps (`last_update`) are in India Standard Time
 # (UTC+5:30) with no tz suffix. Parsing them naively as UTC puts every reading
 # ~5.5h in the future and breaks staleness math — always attach IST.
 IST = timezone(timedelta(hours=5, minutes=30))
+
+# data.gov.in can drop connections from datacenter IPs (e.g. Cloud Run) — retry
+# on connection resets and 429/5xx with backoff before giving up.
+_session = requests.Session()
+_session.mount("https://", HTTPAdapter(max_retries=Retry(
+    total=5, connect=5, read=5, backoff_factor=1.5,
+    status_forcelist=[429, 500, 502, 503, 504], allowed_methods=["GET"],
+)))
 
 from config import (
     CPCB_RESOURCE_ID,
@@ -45,7 +55,7 @@ def fetch_cpcb_snapshot(limit: int = 5000, timeout: int = 30) -> list[dict[str, 
         "format": "json",
         "limit": limit,
     }
-    resp = requests.get(url, params=params, headers=HTTP_HEADERS, timeout=timeout)
+    resp = _session.get(url, params=params, headers=HTTP_HEADERS, timeout=timeout)
     resp.raise_for_status()
     body = resp.json()
     return body.get("records", [])
