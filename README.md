@@ -5,9 +5,9 @@
 > **Track 2 (Pollution Hotspot Detection)** · Build with AI: Code for Communities (Hack2skill × GDG)
 > Problem statement submitted by a sitting Member of Parliament. Winning solutions get piloted in real constituencies.
 
-## Live demo
+## Demo
 
-**https://vaayu-api-229692962627.asia-south1.run.app/** — pick a city, see tomorrow's forecast map, click a neighbourhood, and get the spike forecast, likely drivers, a citizen advisory in the local language, and a weekly MP report.
+The hosted demo is offline: the Cloud Run instance was taken down after the event to keep cloud cost at zero. [Run it yourself](#running-it-yourself) to pick a city, see tomorrow's forecast map, click a neighbourhood, and get the spike forecast, likely drivers, a citizen advisory in the local language, and a weekly MP report.
 
 ---
 
@@ -141,7 +141,7 @@ bash infra/deploy.sh
 | `POST /ask` `{"question": ...}` | grounded NL Q&A |
 | `GET /reports/weekly?city=` | rendered weekly MP report (HTML) |
 
-Base URL: **https://vaayu-api-229692962627.asia-south1.run.app/**
+Base URL: your deployment's Cloud Run URL, or `http://localhost:8080` when running locally.
 
 ---
 
